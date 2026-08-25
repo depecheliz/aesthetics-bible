@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../typography/ThemedText';
+import { EditorialImage } from '../media/EditorialImage';
 import { formatCurrency, type PassportEntry } from '../../src/domain/passport';
 import { colors, spacing } from '../../constants/theme';
 
@@ -20,6 +21,7 @@ function formatDate(dateIso: string): { month: string; day: string } {
 /** One editorial timeline row — replaces the earlier stacked dark card. */
 export function EntryCard({ entry, onPress }: EntryCardProps) {
   const { month, day } = formatDate(entry.date);
+  const hasPhoto = Boolean(entry.photos.baseline || entry.photos.follow_up);
 
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={entry.treatment} style={styles.row}>
@@ -31,6 +33,12 @@ export function EntryCard({ entry, onPress }: EntryCardProps) {
           {day}
         </ThemedText>
       </View>
+
+      {hasPhoto && (
+        <View style={styles.thumbnail}>
+          <EditorialImage variant="skin-detail" compact />
+        </View>
+      )}
 
       <View style={styles.body}>
         <View style={styles.headerRow}>
@@ -57,9 +65,6 @@ export function EntryCard({ entry, onPress }: EntryCardProps) {
               />
             ))}
           </View>
-          {(entry.photos.baseline || entry.photos.follow_up) && (
-            <Feather name="image" size={13} color={colors.textSecondary} />
-          )}
         </View>
         <View style={styles.rule} />
       </View>
@@ -74,6 +79,10 @@ const styles = StyleSheet.create({
   },
   dateColumn: {
     width: 48,
+  },
+  thumbnail: {
+    width: 40,
+    marginRight: spacing.sm,
   },
   body: {
     flex: 1,

@@ -177,6 +177,23 @@ export default function BibleScreen() {
               </ThemedText>
               <Feather name="arrow-right" size={16} color={colors.accent} />
             </Pressable>
+
+            <Pressable
+              onPress={() => router.push('/botox-bestie')}
+              style={styles.compareRow}
+              accessibilityRole="button"
+              accessibilityLabel="Ask Botox Bestie"
+            >
+              <View>
+                <ThemedText variant="bodyLarge" color={colors.textPrimary}>
+                  Not sure where to start?
+                </ThemedText>
+                <ThemedText variant="caption" color={colors.textSecondary}>
+                  Ask Botox Bestie
+                </ThemedText>
+              </View>
+              <Feather name="arrow-right" size={16} color={colors.accent} />
+            </Pressable>
           </>
         )}
       </ScrollView>

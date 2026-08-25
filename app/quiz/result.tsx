@@ -6,11 +6,12 @@ import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
 import { InfoRow } from '../../components/ui/InfoRow';
 import { Rule } from '../../components/ui/Rule';
+import { EditorialImage } from '../../components/media/EditorialImage';
 import { TreatmentActionsGrid } from '../../components/plan/TreatmentActionsGrid';
 import { PremiumRoadmapCard } from '../../components/plan/PremiumRoadmapCard';
 import { ShareCard, ShareCardStatRow } from '../../components/media/ShareCard';
 import { useAppState } from '../../lib/state/AppStateContext';
-import { intensityLabels } from '../../src/domain/quiz';
+import { areaLabels, concernLabels, intensityLabels } from '../../src/domain/quiz';
 import { colors, spacing } from '../../constants/theme';
 
 export default function ResultScreen() {
@@ -29,10 +30,18 @@ export default function ResultScreen() {
   const { topMatch, alternates, budgetNote } = result;
   const category = topMatch.category;
 
+  const matchReasons = [
+    { label: 'Your goal', value: concernLabels[result.concern] },
+    { label: 'Focus area', value: areaLabels[result.area] },
+    { label: 'Preferred result', value: intensityLabels[result.intensity] },
+  ];
+
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader />
+
+        <EditorialImage variant="treatment" label={category.name} style={styles.heroImage} />
 
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
           YOUR AESTHETICS PROFILE
@@ -43,9 +52,22 @@ export default function ResultScreen() {
         <ThemedText variant="displayHero" style={styles.categoryName}>
           {category.name}
         </ThemedText>
-        <ThemedText variant="bodyLarge" color={colors.textSecondary} style={styles.explanation}>
-          {topMatch.explanation}
+
+        <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.whyLabel}>
+          WHY THIS MATCHED YOU
         </ThemedText>
+        <View style={styles.whyList}>
+          {matchReasons.map((reason) => (
+            <View key={reason.label} style={styles.whyRow}>
+              <ThemedText variant="caption" color={colors.textSecondary}>
+                {reason.label}
+              </ThemedText>
+              <ThemedText variant="body" color={colors.textPrimary}>
+                {reason.value}
+              </ThemedText>
+            </View>
+          ))}
+        </View>
 
         <Rule style={styles.rule} />
         <InfoRow label="BEST SUITED FOR" value={category.bestSuitedFor} />
@@ -76,18 +98,29 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: spacing.xxxl,
   },
-  eyebrow: {
+  heroImage: {
     marginTop: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  eyebrow: {
     marginBottom: spacing.sm,
   },
   subEyebrow: {
     marginBottom: spacing.xs,
   },
   categoryName: {
-    marginBottom: spacing.md,
-  },
-  explanation: {
     marginBottom: spacing.lg,
+  },
+  whyLabel: {
+    marginBottom: spacing.sm,
+  },
+  whyList: {
+    marginBottom: spacing.lg,
+  },
+  whyRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.xs,
   },
   rule: {
     width: '100%',

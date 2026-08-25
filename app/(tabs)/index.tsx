@@ -7,6 +7,7 @@ import { Rule } from '../../components/ui/Rule';
 import { EditorialImage } from '../../components/media/EditorialImage';
 import { EditorialModule } from '../../components/home/EditorialModule';
 import { BestieTeaser } from '../../components/home/BestieTeaser';
+import { Monogram } from '../../components/brand/Monogram';
 import { useAppState } from '../../lib/state/AppStateContext';
 import { summarizeEntriesThisYear } from '../../src/domain/passport';
 import { colors, spacing } from '../../constants/theme';
@@ -56,14 +57,17 @@ function DiscoverModules() {
 function NewUserHome() {
   return (
     <>
-      <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
-        THE AESTHETICS BIBLE
-      </ThemedText>
+      <View style={styles.brandRow}>
+        <Monogram size="sm" />
+        <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
+          THE AESTHETICS BIBLE
+        </ThemedText>
+      </View>
       <ThemedText variant="displayHero" style={styles.headline}>
         See your possibilities.{'\n'}Discover your options.{'\n'}Plan your aesthetic journey.
       </ThemedText>
 
-      <EditorialImage variant="portrait" style={styles.heroImage} />
+      <EditorialImage variant="portrait" monogram style={styles.heroImage} />
 
       <Button
         label="Build My Aesthetics Plan"
@@ -72,8 +76,8 @@ function NewUserHome() {
         style={styles.primaryCta}
       />
 
-      <DiscoverModules />
       <BestieTeaser onPress={() => router.push('/botox-bestie')} />
+      <DiscoverModules />
     </>
   );
 }
@@ -115,8 +119,8 @@ function ReturningUserHome() {
       </View>
       <Rule style={styles.statsRule} />
 
-      <DiscoverModules />
       <BestieTeaser onPress={() => router.push('/botox-bestie')} />
+      <DiscoverModules />
     </>
   );
 }
@@ -137,6 +141,12 @@ const styles = StyleSheet.create({
   content: {
     paddingTop: spacing.xl,
     paddingBottom: spacing.xxxl,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
   eyebrow: {
     marginBottom: spacing.md,

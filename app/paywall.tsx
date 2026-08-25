@@ -5,6 +5,8 @@ import { ThemedText } from '../components/typography/ThemedText';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Rule } from '../components/ui/Rule';
+import { BeforeAfterFrame } from '../components/media/BeforeAfterFrame';
+import { Monogram } from '../components/brand/Monogram';
 import { colors, radius, spacing } from '../constants/theme';
 
 const premiumModules: { name: string; description: string }[] = [
@@ -29,11 +31,19 @@ export default function PaywallScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader closeIcon />
 
-        <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
-          THE AESTHETICS BIBLE PREMIUM
-        </ThemedText>
+        <View style={styles.brandRow}>
+          <Monogram size="sm" />
+          <ThemedText variant="eyebrow" color={colors.accent}>
+            THE AESTHETICS BIBLE PREMIUM
+          </ThemedText>
+        </View>
         <ThemedText variant="displayHero" style={styles.headline}>
           Your entire aesthetics journey, beautifully organized.
+        </ThemedText>
+
+        <BeforeAfterFrame leftLabel="TODAY" rightLabel="ORGANIZED" />
+        <ThemedText variant="caption" color={colors.textMuted} style={styles.storyCaption}>
+          From scattered notes and screenshots to one private, beautiful record.
         </ThemedText>
 
         <Rule style={styles.rule} />
@@ -87,11 +97,19 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: spacing.xxxl,
   },
-  eyebrow: {
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     marginTop: spacing.md,
     marginBottom: spacing.sm,
   },
   headline: {
+    marginBottom: spacing.lg,
+  },
+  storyCaption: {
+    textAlign: 'center',
+    marginTop: spacing.sm,
     marginBottom: spacing.lg,
   },
   rule: {

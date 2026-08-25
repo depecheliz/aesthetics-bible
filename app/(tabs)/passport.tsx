@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
@@ -90,6 +90,23 @@ export default function PassportScreen() {
           />
         </View>
 
+        <Pressable onPress={() => router.push('/passport/photos')} style={styles.progressStrip}>
+          <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
+            PROGRESS
+          </ThemedText>
+          <View style={styles.progressRow}>
+            <View style={styles.progressThumb}>
+              <EditorialImage variant="skin-detail" compact />
+            </View>
+            <View style={styles.progressThumb}>
+              <EditorialImage variant="skin-detail" compact />
+            </View>
+            <View style={styles.progressMore}>
+              <Feather name="arrow-right" size={16} color={colors.accent} />
+            </View>
+          </View>
+        </Pressable>
+
         <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
           TIMELINE
         </ThemedText>
@@ -156,6 +173,19 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     marginBottom: spacing.sm,
+  },
+  progressStrip: {
+    marginBottom: spacing.xl,
+  },
+  progressRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  progressThumb: {
+    width: 64,
+  },
+  progressMore: {
+    justifyContent: 'center',
   },
   wrappedTeaser: {
     flexDirection: 'row',

@@ -4,6 +4,7 @@ import { ThemedText } from '../typography/ThemedText';
 import { Card } from '../ui/Card';
 import { Rule } from '../ui/Rule';
 import { Button } from '../ui/Button';
+import { Monogram } from '../brand/Monogram';
 import { colors, spacing } from '../../constants/theme';
 
 type ShareCardProps = {
@@ -23,9 +24,12 @@ type ShareCardProps = {
 export function ShareCard({ eyebrow, title, children, ctaLabel = 'Save & Share', onShare, disabled = true }: ShareCardProps) {
   return (
     <Card variant="ivory" style={styles.card}>
-      <ThemedText variant="eyebrow" color={colors.accent}>
-        {eyebrow}
-      </ThemedText>
+      <View style={styles.headerRow}>
+        <ThemedText variant="eyebrow" color={colors.accent}>
+          {eyebrow}
+        </ThemedText>
+        <Monogram size="sm" tone="ivory" />
+      </View>
       <ThemedText variant="displaySmall" color={colors.textOnIvory} style={styles.title}>
         {title}
       </ThemedText>
@@ -59,6 +63,11 @@ export function ShareCardStatRow({ label, value }: { label: string; value: strin
 const styles = StyleSheet.create({
   card: {
     marginBottom: spacing.lg,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   title: {
     marginTop: spacing.xs,

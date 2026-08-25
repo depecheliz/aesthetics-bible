@@ -1,12 +1,14 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
+import { Button } from '../../components/ui/Button';
 import { InfoRow } from '../../components/ui/InfoRow';
 import { Rule } from '../../components/ui/Rule';
-import { getBibleTreatmentById } from '../../src/domain/bible';
+import { EditorialImage } from '../../components/media/EditorialImage';
+import { findComparableCategoryId, getBibleTreatmentById } from '../../src/domain/bible';
 import { treatmentCategories } from '../../src/domain/recommendation';
 import { colors, spacing } from '../../constants/theme';
 
@@ -32,11 +34,14 @@ export default function TreatmentDetailScreen() {
   }
 
   const category = treatmentCategories[treatment.categoryId];
+  const compareWithId = findComparableCategoryId(treatment.categoryId);
 
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader />
+
+        <EditorialImage variant="treatment" label={treatment.name} style={styles.heroImage} />
 
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
           THE BIBLE · {category.name.toUpperCase()}
@@ -58,6 +63,35 @@ export default function TreatmentDetailScreen() {
         <InfoRow label="DOWNTIME" value={category.downtimeContext} />
         <InfoRow label="TYPICAL COST" value={category.costContext} />
         <InfoRow label="LONGEVITY" value={category.longevityContext} />
+
+        <View style={styles.actionsRow}>
+          {compareWithId && (
+            <Button
+              label="Compare"
+              icon="bar-chart-2"
+              variant="secondary"
+              fullWidth={false}
+              style={styles.actionButton}
+              onPress={() => router.push(`/compare?a=${category.id}&b=${compareWithId}`)}
+            />
+          )}
+          <Button
+            label="Ask Bestie"
+            icon="message-circle"
+            variant="secondary"
+            fullWidth={false}
+            style={styles.actionButton}
+            onPress={() => router.push('/botox-bestie')}
+          />
+          <Button
+            label="Find Near Me"
+            icon="map-pin"
+            variant="secondary"
+            fullWidth={false}
+            style={styles.actionButton}
+            onPress={() => router.push('/near-me')}
+          />
+        </View>
 
         <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
           QUESTIONS TO ASK A PROVIDER
@@ -86,8 +120,11 @@ const styles = StyleSheet.create({
   notFound: {
     marginTop: spacing.xl,
   },
-  eyebrow: {
+  heroImage: {
     marginTop: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  eyebrow: {
     marginBottom: spacing.xs,
   },
   title: {
@@ -104,8 +141,17 @@ const styles = StyleSheet.create({
     opacity: 0.4,
     marginBottom: spacing.sm,
   },
-  sectionLabel: {
+  actionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
     marginTop: spacing.lg,
+  },
+  actionButton: {
+    paddingHorizontal: spacing.sm,
+  },
+  sectionLabel: {
+    marginTop: spacing.xl,
     marginBottom: spacing.sm,
   },
   questionRow: {

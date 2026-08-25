@@ -1,7 +1,9 @@
 import {
+  bibleCategoryFilters,
   bibleConcerns,
   bibleTreatments,
   filterBibleTreatmentsByCategory,
+  findComparableCategoryId,
   getBibleTreatmentById,
   searchBibleTreatments,
 } from './bible';
@@ -78,5 +80,19 @@ describe('bibleConcerns', () => {
   it('applies the Bible-specific label override for skin laxity', () => {
     const saggingSkin = bibleConcerns.find((c) => c.id === 'sagging_skin');
     expect(saggingSkin?.name).toBe('Skin laxity');
+  });
+});
+
+describe('findComparableCategoryId', () => {
+  it('finds another category from a shared concern candidate list', () => {
+    // "ultrasound" and "rf" both appear under sagging_skin's candidates.
+    expect(findComparableCategoryId('ultrasound')).toBeDefined();
+    expect(findComparableCategoryId('ultrasound')).not.toBe('ultrasound');
+  });
+
+  it('returns a defined pairing for every category used in the Bible', () => {
+    for (const categoryId of bibleCategoryFilters) {
+      expect(findComparableCategoryId(categoryId)).toBeDefined();
+    }
   });
 });

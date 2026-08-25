@@ -213,3 +213,19 @@ export function getBibleTreatmentById(id: string): BibleTreatment | undefined {
     reviewDate: '2026-01-01',
   };
 }
+
+/**
+ * Finds another category worth comparing a given one against, by looking
+ * for a concern whose candidate list contains both. Pure lookup over
+ * existing recommendation data — does not alter recommendation rules.
+ * Used to offer a sensible default "Compare" pairing on Bible detail
+ * pages without hardcoding all category pairs.
+ */
+export function findComparableCategoryId(categoryId: TreatmentCategoryId): TreatmentCategoryId | undefined {
+  for (const candidates of Object.values(concernCandidates)) {
+    if (!candidates.includes(categoryId)) continue;
+    const other = candidates.find((id) => id !== categoryId);
+    if (other) return other;
+  }
+  return undefined;
+}

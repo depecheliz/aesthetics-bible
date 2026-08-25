@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
-import { ThemedText } from '../typography/ThemedText';
+import { Feather } from '@expo/vector-icons';
 import { EditorialImage } from './EditorialImage';
-import { colors, spacing } from '../../constants/theme';
+import { colors } from '../../constants/theme';
 
 type BeforeAfterFrameProps = {
   leftLabel?: string;
@@ -21,16 +21,12 @@ export function BeforeAfterFrame({
     <View style={styles.row}>
       <View style={styles.pane}>
         <EditorialImage variant="portrait" uri={leftUri} label={leftLabel} />
-        <ThemedText variant="caption" color={colors.textSecondary} style={styles.paneLabel}>
-          {leftLabel}
-        </ThemedText>
       </View>
-      <View style={styles.divider} />
+      <View style={styles.divider}>
+        <Feather name="arrow-right" size={14} color={colors.accent} />
+      </View>
       <View style={styles.pane}>
         <EditorialImage variant="portrait" uri={rightUri} label={rightLabel} />
-        <ThemedText variant="caption" color={colors.accent} style={styles.paneLabel}>
-          {rightLabel}
-        </ThemedText>
       </View>
     </View>
   );
@@ -39,20 +35,14 @@ export function BeforeAfterFrame({
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   pane: {
     flex: 1,
   },
-  paneLabel: {
-    marginTop: spacing.xs,
-    textAlign: 'center',
-    letterSpacing: 1.2,
-  },
   divider: {
-    width: 1,
-    backgroundColor: colors.rule,
-    marginHorizontal: spacing.sm,
-    alignSelf: 'stretch',
+    width: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

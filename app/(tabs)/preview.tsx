@@ -96,9 +96,6 @@ export default function PreviewScreen() {
             </ThemedText>
 
             <EditorialImage variant="portrait" label="AI VISUALIZATION" style={styles.heroImage} />
-            <ThemedText variant="eyebrow" color={colors.accent} style={styles.aiLabel}>
-              AI VISUALIZATION
-            </ThemedText>
 
             <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
               CHOOSE A LOOK
@@ -166,13 +163,6 @@ export default function PreviewScreen() {
                     style={styles.presetTile}
                   >
                     <EditorialImage variant="social" tone={selected ? 'ivory' : 'dark'} label={preset} />
-                    <ThemedText
-                      variant="caption"
-                      color={selected ? colors.accent : colors.textPrimary}
-                      style={styles.presetLabel}
-                    >
-                      {preset}
-                    </ThemedText>
                   </Pressable>
                 );
               })}
@@ -238,11 +228,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   heroImage: {
-    marginBottom: spacing.sm,
-  },
-  aiLabel: {
     marginBottom: spacing.lg,
-    letterSpacing: 1.6,
   },
   sectionLabel: {
     marginBottom: spacing.sm,
@@ -311,10 +297,6 @@ const styles = StyleSheet.create({
   },
   presetTile: {
     width: '31%',
-  },
-  presetLabel: {
-    marginTop: spacing.xs,
-    textAlign: 'center',
   },
   lookCard: {
     marginBottom: spacing.lg,
