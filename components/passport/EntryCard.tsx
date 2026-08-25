@@ -1,23 +1,38 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../typography/ThemedText';
-import { Card } from '../ui/Card';
 import { formatCurrency, type PassportEntry } from '../../src/domain/passport';
-import { colors, radius, spacing } from '../../constants/theme';
+import { colors, spacing } from '../../constants/theme';
 
 type EntryCardProps = {
   entry: PassportEntry;
   onPress: () => void;
 };
 
-function formatDate(dateIso: string): string {
-  return new Date(dateIso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+function formatDate(dateIso: string): { month: string; day: string } {
+  const date = new Date(dateIso);
+  return {
+    month: date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+    day: date.toLocaleDateString('en-US', { day: 'numeric' }),
+  };
 }
 
+/** One editorial timeline row — replaces the earlier stacked dark card. */
 export function EntryCard({ entry, onPress }: EntryCardProps) {
+  const { month, day } = formatDate(entry.date);
+
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={entry.treatment}>
-      <Card variant="surface" style={styles.card}>
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={entry.treatment} style={styles.row}>
+      <View style={styles.dateColumn}>
+        <ThemedText variant="caption" color={colors.textMuted}>
+          {month}
+        </ThemedText>
+        <ThemedText variant="displaySmall" color={colors.textPrimary}>
+          {day}
+        </ThemedText>
+      </View>
+
+      <View style={styles.body}>
         <View style={styles.headerRow}>
           <ThemedText variant="bodyLarge" color={colors.textPrimary} style={styles.treatment}>
             {entry.treatment}
@@ -27,42 +42,41 @@ export function EntryCard({ entry, onPress }: EntryCardProps) {
           </ThemedText>
         </View>
         <ThemedText variant="caption" color={colors.textSecondary}>
-          {formatDate(entry.date)} · {entry.provider}
+          {entry.provider}
         </ThemedText>
-        {entry.notes.length > 0 && (
-          <ThemedText variant="body" color={colors.textSecondary} numberOfLines={1} style={styles.notes}>
-            {entry.notes}
-          </ThemedText>
-        )}
+
         <View style={styles.footerRow}>
           <View style={styles.starsRow}>
             {Array.from({ length: 5 }).map((_, index) => (
               <Feather
                 key={index}
                 name="star"
-                size={12}
+                size={11}
                 color={index < entry.satisfaction ? colors.accent : colors.border}
                 style={styles.star}
               />
             ))}
           </View>
           {(entry.photos.baseline || entry.photos.follow_up) && (
-            <View style={styles.photoBadge}>
-              <Feather name="image" size={12} color={colors.textSecondary} />
-              <ThemedText variant="caption" color={colors.textSecondary} style={styles.photoBadgeLabel}>
-                Photos
-              </ThemedText>
-            </View>
+            <Feather name="image" size={13} color={colors.textSecondary} />
           )}
         </View>
-      </Card>
+        <View style={styles.rule} />
+      </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    marginBottom: spacing.sm,
+  row: {
+    flexDirection: 'row',
+    paddingVertical: spacing.md,
+  },
+  dateColumn: {
+    width: 48,
+  },
+  body: {
+    flex: 1,
   },
   headerRow: {
     flexDirection: 'row',
@@ -72,9 +86,6 @@ const styles = StyleSheet.create({
   treatment: {
     flex: 1,
     marginRight: spacing.sm,
-  },
-  notes: {
-    marginTop: spacing.xs,
   },
   footerRow: {
     flexDirection: 'row',
@@ -88,16 +99,9 @@ const styles = StyleSheet.create({
   star: {
     marginRight: 2,
   },
-  photoBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: 2,
-  },
-  photoBadgeLabel: {
-    marginLeft: spacing.xxs,
+  rule: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.border,
+    marginTop: spacing.md,
   },
 });

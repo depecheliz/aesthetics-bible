@@ -12,6 +12,10 @@ import { getRecommendation } from '../../src/domain/recommendation';
 import { useAppState } from '../../lib/state/AppStateContext';
 import { colors, spacing } from '../../constants/theme';
 
+function stepNumber(n: number): string {
+  return n < 10 ? `0${n}` : String(n);
+}
+
 export default function QuizScreen() {
   const { quizAnswers, setAnswer, setResult } = useAppState();
   const [stepIndex, setStepIndex] = useState(0);
@@ -45,13 +49,13 @@ export default function QuizScreen() {
       <ScreenHeader onBack={handleBack} />
       <View style={styles.progressWrap}>
         <ProgressBar current={stepIndex + 1} total={quizQuestions.length} />
-        <ThemedText variant="caption" color={colors.textSecondary} style={styles.stepLabel}>
-          QUESTION {stepIndex + 1} OF {quizQuestions.length}
+        <ThemedText variant="numberLabel" color={colors.textSecondary} style={styles.stepLabel}>
+          {stepNumber(stepIndex + 1)} / {stepNumber(quizQuestions.length)}
         </ThemedText>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <ThemedText variant="displaySmall" style={styles.title}>
+        <ThemedText variant="displayLarge" style={styles.title}>
           {question.title}
         </ThemedText>
 
@@ -80,16 +84,16 @@ export default function QuizScreen() {
 const styles = StyleSheet.create({
   progressWrap: {
     marginTop: spacing.sm,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
   },
   stepLabel: {
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
   },
   content: {
     paddingBottom: spacing.xl,
   },
   title: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
   },
   footer: {
     paddingVertical: spacing.md,

@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
 import { ThemedText } from '../../components/typography/ThemedText';
-import { Card } from '../../components/ui/Card';
 import { SearchInput } from '../../components/ui/SearchInput';
 import { FilterChip } from '../../components/ui/FilterChip';
+import { Rule } from '../../components/ui/Rule';
 import {
   bibleCategoryFilters,
   bibleConcerns,
@@ -15,7 +16,13 @@ import {
   type BibleConcernId,
 } from '../../src/domain/bible';
 import { treatmentCategories, type TreatmentCategoryId } from '../../src/domain/recommendation';
-import { colors, radius, spacing } from '../../constants/theme';
+import { colors, spacing } from '../../constants/theme';
+
+const mostExplored = bibleTreatments.slice(0, 3);
+
+function stepNumber(n: number): string {
+  return n < 10 ? `0${n}` : String(n);
+}
 
 export default function BibleScreen() {
   const [query, setQuery] = useState('');
@@ -34,6 +41,8 @@ export default function BibleScreen() {
     return filterBibleTreatmentsByCategory(selectedCategory, searched);
   }, [query, selectedCategory, selectedConcernId]);
 
+  const isFiltered = query.length > 0 || selectedCategory !== 'all' || selectedConcernId !== null;
+
   const selectConcern = (id: BibleConcernId) => {
     setSelectedConcernId((prev) => (prev === id ? null : id));
     setSelectedCategory('all');
@@ -50,44 +59,53 @@ export default function BibleScreen() {
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
           THE BIBLE
         </ThemedText>
-        <ThemedText variant="displaySmall" style={styles.title}>
+        <ThemedText variant="displayLarge" style={styles.title}>
           Your Aesthetics Library
         </ThemedText>
 
         <SearchInput value={query} onChangeText={setQuery} placeholder="Search treatments" />
 
-        <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
-          BROWSE BY CONCERN
-        </ThemedText>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.concernScroll}>
-          {bibleConcerns.map((concern) => {
-            const selected = selectedConcernId === concern.id;
-            return (
-              <Pressable
-                key={concern.id}
-                onPress={() => selectConcern(concern.id)}
-                accessibilityRole="button"
-                accessibilityLabel={concern.name}
-                accessibilityState={{ selected }}
-              >
-                <Card variant={selected ? 'ivory' : 'outline'} style={styles.concernCard}>
-                  <ThemedText
-                    variant="body"
-                    color={selected ? colors.textOnIvory : colors.textPrimary}
-                    style={styles.concernLabel}
-                  >
-                    {concern.name}
+        {!isFiltered && (
+          <>
+            <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
+              MOST EXPLORED
+            </ThemedText>
+            <View style={styles.mostExploredRow}>
+              {mostExplored.map((treatment) => (
+                <Pressable
+                  key={treatment.id}
+                  onPress={() => router.push(`/bible/${treatment.id}`)}
+                  style={styles.mostExploredItem}
+                >
+                  <ThemedText variant="body" color={colors.textPrimary}>
+                    {treatment.name}
                   </ThemedText>
-                </Card>
-              </Pressable>
-            );
-          })}
+                  <Feather name="arrow-right" size={13} color={colors.accent} />
+                </Pressable>
+              ))}
+            </View>
+            <Rule style={styles.sectionRule} />
+          </>
+        )}
+
+        <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
+          BY CONCERN
+        </ThemedText>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+          {bibleConcerns.map((concern) => (
+            <FilterChip
+              key={concern.id}
+              label={concern.name}
+              selected={selectedConcernId === concern.id}
+              onPress={() => selectConcern(concern.id)}
+            />
+          ))}
         </ScrollView>
 
         <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
           CATEGORY
         </ThemedText>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
           <FilterChip label="All" selected={selectedCategory === 'all'} onPress={() => selectCategory('all')} />
           {bibleCategoryFilters.map((categoryId) => (
             <FilterChip
@@ -99,29 +117,68 @@ export default function BibleScreen() {
           ))}
         </ScrollView>
 
+        <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
+          TREATMENT INDEX
+        </ThemedText>
         <View style={styles.results}>
           {results.length === 0 ? (
             <ThemedText variant="body" color={colors.textSecondary} style={styles.emptyText}>
               No matches for that search.
             </ThemedText>
           ) : (
-            results.map((treatment) => (
+            results.map((treatment, index) => (
               <Pressable key={treatment.id} onPress={() => router.push(`/bible/${treatment.id}`)}>
-                <Card variant="surface" style={styles.treatmentCard}>
-                  <ThemedText variant="bodyLarge" color={colors.textPrimary}>
-                    {treatment.name}
+                <View style={styles.indexRow}>
+                  <ThemedText variant="numberLabel" color={colors.textMuted} style={styles.indexNumber}>
+                    {stepNumber(index + 1)}
                   </ThemedText>
-                  <ThemedText variant="caption" color={colors.accent} style={styles.treatmentCategory}>
-                    {treatmentCategories[treatment.categoryId].name.toUpperCase()}
-                  </ThemedText>
-                  <ThemedText variant="body" color={colors.textSecondary} numberOfLines={2} style={styles.treatmentOverview}>
-                    {treatment.overview}
-                  </ThemedText>
-                </Card>
+                  <View style={styles.indexBody}>
+                    <ThemedText variant="displaySmall" color={colors.textPrimary}>
+                      {treatment.name}
+                    </ThemedText>
+                    <ThemedText variant="caption" color={colors.accent} style={styles.treatmentCategory}>
+                      {treatmentCategories[treatment.categoryId].name.toUpperCase()}
+                    </ThemedText>
+                    <ThemedText
+                      variant="body"
+                      color={colors.textSecondary}
+                      numberOfLines={2}
+                      style={styles.treatmentOverview}
+                    >
+                      {treatment.overview}
+                    </ThemedText>
+                    <View style={styles.exploreRow}>
+                      <ThemedText variant="caption" color={colors.accent} style={styles.exploreLabel}>
+                        EXPLORE
+                      </ThemedText>
+                      <Feather name="arrow-right" size={12} color={colors.accent} />
+                    </View>
+                  </View>
+                </View>
+                <Rule style={styles.itemRule} />
               </Pressable>
             ))
           )}
         </View>
+
+        {!isFiltered && (
+          <>
+            <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
+              COMPARE
+            </ThemedText>
+            <Pressable
+              onPress={() => router.push('/compare?a=ultrasound&b=rf')}
+              style={styles.compareRow}
+              accessibilityRole="button"
+              accessibilityLabel="Sofwave vs RF Microneedling"
+            >
+              <ThemedText variant="bodyLarge" color={colors.textPrimary}>
+                Sofwave vs RF Microneedling
+              </ThemedText>
+              <Feather name="arrow-right" size={16} color={colors.accent} />
+            </Pressable>
+          </>
+        )}
       </ScrollView>
     </Screen>
   );
@@ -139,40 +196,68 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   sectionLabel: {
-    marginTop: spacing.lg,
+    marginTop: spacing.xl,
     marginBottom: spacing.sm,
   },
-  concernScroll: {
+  mostExploredRow: {
+    gap: spacing.sm,
+  },
+  mostExploredItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.xs,
+  },
+  sectionRule: {
+    width: '100%',
+    opacity: 0.4,
+    marginTop: spacing.sm,
+  },
+  chipScroll: {
     marginHorizontal: -spacing.lg,
     paddingHorizontal: spacing.lg,
   },
-  concernCard: {
-    marginRight: spacing.sm,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.md,
-  },
-  concernLabel: {
-    minWidth: 110,
-  },
-  filterScroll: {
-    marginHorizontal: -spacing.lg,
-    paddingHorizontal: spacing.lg,
-  },
-  results: {
-    marginTop: spacing.lg,
-  },
+  results: {},
   emptyText: {
     marginTop: spacing.lg,
     textAlign: 'center',
   },
-  treatmentCard: {
-    marginBottom: spacing.sm,
+  indexRow: {
+    flexDirection: 'row',
+    paddingVertical: spacing.lg,
+  },
+  indexNumber: {
+    width: 32,
+  },
+  indexBody: {
+    flex: 1,
   },
   treatmentCategory: {
     marginTop: spacing.xxs,
     marginBottom: spacing.xs,
     letterSpacing: 1,
   },
-  treatmentOverview: {},
+  treatmentOverview: {
+    marginBottom: spacing.sm,
+  },
+  exploreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xxs,
+  },
+  exploreLabel: {
+    letterSpacing: 1.4,
+  },
+  itemRule: {
+    width: '100%',
+    opacity: 0.4,
+  },
+  compareRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+  },
 });

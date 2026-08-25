@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../typography/ThemedText';
-import { colors, radius, spacing } from '../../constants/theme';
+import { colors, spacing } from '../../constants/theme';
 
 type OptionRowProps = {
   label: string;
@@ -16,16 +16,16 @@ export function OptionRow({ label, selected, onPress }: OptionRowProps) {
       accessibilityRole="radio"
       accessibilityLabel={label}
       accessibilityState={{ selected }}
-      style={[styles.row, selected && styles.rowSelected]}
+      style={styles.row}
     >
-      <ThemedText variant="bodyLarge" color={selected ? colors.textPrimary : colors.textSecondary} style={styles.label}>
+      <ThemedText
+        variant={selected ? 'displaySmall' : 'bodyLarge'}
+        color={selected ? colors.textPrimary : colors.textSecondary}
+        style={styles.label}
+      >
         {label}
       </ThemedText>
-      <Feather
-        name={selected ? 'check-circle' : 'circle'}
-        size={20}
-        color={selected ? colors.accent : colors.border}
-      />
+      {selected && <Feather name="check" size={18} color={colors.accent} />}
     </Pressable>
   );
 }
@@ -36,16 +36,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.sm,
-    backgroundColor: colors.surface,
-  },
-  rowSelected: {
-    borderColor: colors.accent,
-    backgroundColor: colors.surfaceRaised,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
   },
   label: {
     flex: 1,

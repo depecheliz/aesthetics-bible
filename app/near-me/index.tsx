@@ -1,10 +1,9 @@
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
-import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
+import { EditorialImage } from '../../components/media/EditorialImage';
 import { useAppState } from '../../lib/state/AppStateContext';
 import type { ProviderResult } from '../../lib/services/places';
 import { colors, spacing } from '../../constants/theme';
@@ -47,63 +46,56 @@ function formatDistance(meters: number | null): string {
   return `${miles.toFixed(1)} mi`;
 }
 
-function ProviderCard({ provider }: { provider: ProviderResult }) {
+function ProviderRow({ provider }: { provider: ProviderResult }) {
   const { savedProviderIds, toggleSavedProvider } = useAppState();
   const saved = savedProviderIds.includes(provider.id);
 
   return (
-    <Card variant="surface" style={styles.providerCard}>
-      <View style={styles.headerRow}>
-        <View style={styles.headerText}>
-          <ThemedText variant="bodyLarge" color={colors.textPrimary}>
-            {provider.name}
-          </ThemedText>
-          <ThemedText variant="caption" color={colors.textSecondary}>
-            {provider.category}
-          </ThemedText>
-        </View>
+    <View style={styles.row}>
+      <View style={styles.thumbnail}>
+        <EditorialImage variant="skin-detail" compact />
       </View>
 
-      <View style={styles.metaRow}>
-        <Feather name="star" size={14} color={colors.accent} style={styles.metaIcon} />
-        <ThemedText variant="caption" color={colors.textSecondary}>
-          {provider.rating?.toFixed(1)} ({provider.reviewCount} reviews) · {formatDistance(provider.distanceMeters)}
+      <View style={styles.body}>
+        <ThemedText variant="bodyLarge" color={colors.textPrimary}>
+          {provider.name}
         </ThemedText>
-      </View>
-      <View style={styles.metaRow}>
-        <Feather name="map-pin" size={14} color={colors.textSecondary} style={styles.metaIcon} />
-        <ThemedText variant="caption" color={colors.textSecondary}>
+        <ThemedText variant="caption" color={colors.textSecondary} style={styles.metaLine}>
+          {provider.rating?.toFixed(1)} ★ · {provider.reviewCount} Google reviews
+        </ThemedText>
+        <ThemedText variant="caption" color={colors.textSecondary} style={styles.metaLine}>
+          {formatDistance(provider.distanceMeters)} · {provider.category}
+        </ThemedText>
+        <ThemedText variant="caption" color={colors.textMuted} style={styles.metaLine}>
           {provider.address}
         </ThemedText>
-      </View>
 
-      <View style={styles.actionsRow}>
-        <Button
-          label="View"
-          icon="eye"
-          variant="secondary"
-          fullWidth={false}
-          style={styles.actionButton}
-          onPress={() => Alert.alert(provider.name, 'A full provider profile will be available in a future update.')}
-        />
-        <Button
-          label={saved ? 'Saved' : 'Save'}
-          icon={saved ? 'check' : 'bookmark'}
-          variant={saved ? 'ghost' : 'secondary'}
-          fullWidth={false}
-          style={styles.actionButton}
-          onPress={() => toggleSavedProvider(provider.id)}
-        />
-        <Button
-          label="Directions"
-          icon="navigation"
-          variant="secondary"
-          fullWidth={false}
-          style={styles.actionButton}
-          onPress={() => Alert.alert('Directions', 'Directions will open in your maps app in a future update.')}
-        />
+        <View style={styles.actionsRow}>
+          <Button
+            label="View"
+            variant="secondary"
+            fullWidth={false}
+            style={styles.actionButton}
+            onPress={() => Alert.alert(provider.name, 'A full provider profile will be available in a future update.')}
+          />
+          <Button
+            label={saved ? 'Saved' : 'Save'}
+            icon={saved ? 'check' : undefined}
+            variant={saved ? 'ghost' : 'secondary'}
+            fullWidth={false}
+            style={styles.actionButton}
+            onPress={() => toggleSavedProvider(provider.id)}
+          />
+          <Button
+            label="Directions"
+            variant="secondary"
+            fullWidth={false}
+            style={styles.actionButton}
+            onPress={() => Alert.alert('Directions', 'Directions will open in your maps app in a future update.')}
+          />
+        </View>
       </View>
-    </Card>
+    </View>
   );
 }
 
@@ -116,15 +108,18 @@ export default function NearMeScreen() {
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
           NEAR ME
         </ThemedText>
-        <ThemedText variant="displaySmall" style={styles.title}>
+        <ThemedText variant="displayMedium" style={styles.title}>
           Providers Worth Exploring
         </ThemedText>
         <ThemedText variant="caption" color={colors.textSecondary} style={styles.caption}>
           Sample results — live search coming soon.
         </ThemedText>
 
-        {sampleProviders.map((provider) => (
-          <ProviderCard key={provider.id} provider={provider} />
+        {sampleProviders.map((provider, index) => (
+          <View key={provider.id}>
+            <ProviderRow provider={provider} />
+            {index < sampleProviders.length - 1 && <View style={styles.divider} />}
+          </View>
         ))}
       </ScrollView>
     </Screen>
@@ -145,31 +140,31 @@ const styles = StyleSheet.create({
   caption: {
     marginBottom: spacing.lg,
   },
-  providerCard: {
-    marginBottom: spacing.sm,
-  },
-  headerRow: {
+  row: {
     flexDirection: 'row',
-    marginBottom: spacing.xs,
+    gap: spacing.md,
+    paddingVertical: spacing.md,
   },
-  headerText: {
+  thumbnail: {
+    width: 72,
+  },
+  body: {
     flex: 1,
   },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.xxs,
-  },
-  metaIcon: {
-    marginRight: spacing.xs,
+  metaLine: {
+    marginTop: spacing.xxs,
   },
   actionsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.xs,
     marginTop: spacing.sm,
   },
   actionButton: {
-    flex: 1,
-    paddingHorizontal: spacing.xs,
+    paddingHorizontal: spacing.sm,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.border,
   },
 });

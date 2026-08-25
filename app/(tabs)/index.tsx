@@ -1,23 +1,57 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
 import { ThemedText } from '../../components/typography/ThemedText';
 import { Button } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
+import { Rule } from '../../components/ui/Rule';
+import { EditorialImage } from '../../components/media/EditorialImage';
+import { EditorialModule } from '../../components/home/EditorialModule';
+import { BestieTeaser } from '../../components/home/BestieTeaser';
 import { useAppState } from '../../lib/state/AppStateContext';
 import { summarizeEntriesThisYear } from '../../src/domain/passport';
 import { colors, spacing } from '../../constants/theme';
 
-const quickActions: {
-  label: string;
-  icon: keyof typeof Feather.glyphMap;
-  href: '/bible' | '/preview' | '/passport';
-}[] = [
-  { label: 'Explore The Bible', icon: 'book-open', href: '/bible' },
-  { label: 'Preview My Look', icon: 'camera', href: '/preview' },
-  { label: 'My Aesthetics Passport', icon: 'briefcase', href: '/passport' },
-];
+function DiscoverModules() {
+  return (
+    <View style={styles.modules}>
+      <EditorialModule
+        number="01"
+        eyebrow="DISCOVER"
+        title="The Aesthetics Bible"
+        subtitle="Understand treatments before making decisions."
+        layout="image-right"
+        imageVariant="skin-detail"
+        onPress={() => router.push('/bible')}
+      />
+      <EditorialModule
+        number="02"
+        eyebrow="PREVIEW"
+        title="See Your Possibilities"
+        subtitle="Explore aesthetic looks before making a decision."
+        layout="image-top"
+        imageVariant="portrait"
+        onPress={() => router.push('/preview')}
+      />
+      <EditorialModule
+        number="03"
+        eyebrow="GLOW"
+        title="Your Photo. Elevated."
+        subtitle="Create polished social images."
+        layout="image-left"
+        imageVariant="social"
+        onPress={() => router.push({ pathname: '/preview', params: { mode: 'glow' } })}
+      />
+      <EditorialModule
+        number="04"
+        eyebrow="PASSPORT"
+        title="Your Aesthetic History"
+        subtitle="Everything you've done, remembered beautifully."
+        layout="text-only"
+        onPress={() => router.push('/passport')}
+      />
+    </View>
+  );
+}
 
 function NewUserHome() {
   return (
@@ -25,9 +59,11 @@ function NewUserHome() {
       <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
         THE AESTHETICS BIBLE
       </ThemedText>
-      <ThemedText variant="displayLarge" style={styles.headline}>
+      <ThemedText variant="displayHero" style={styles.headline}>
         See your possibilities.{'\n'}Discover your options.{'\n'}Plan your aesthetic journey.
       </ThemedText>
+
+      <EditorialImage variant="portrait" style={styles.heroImage} />
 
       <Button
         label="Build My Aesthetics Plan"
@@ -36,30 +72,8 @@ function NewUserHome() {
         style={styles.primaryCta}
       />
 
-      <Card variant="outline" style={styles.introCard}>
-        <ThemedText variant="bodyLarge" color={colors.textPrimary}>
-          The Aesthetics Bible helps you understand your options, visualize possibilities,
-          organize your aesthetics journey, and remember what you&apos;ve done — all in one place.
-        </ThemedText>
-      </Card>
-
-      <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
-        QUICK ACTIONS
-      </ThemedText>
-      <View style={styles.quickActions}>
-        {quickActions.map((action) => (
-          <Card key={action.href} variant="surface" style={styles.quickActionCard}>
-            <Button
-              label={action.label}
-              icon={action.icon}
-              variant="ghost"
-              fullWidth={false}
-              onPress={() => router.push(action.href)}
-              style={styles.quickActionButton}
-            />
-          </Card>
-        ))}
-      </View>
+      <DiscoverModules />
+      <BestieTeaser onPress={() => router.push('/botox-bestie')} />
     </>
   );
 }
@@ -74,60 +88,35 @@ function ReturningUserHome() {
       <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
         WELCOME BACK
       </ThemedText>
-      <ThemedText variant="displayMedium" style={styles.headline}>
+      <ThemedText variant="displayLarge" style={styles.headline}>
         Continue your aesthetics journey.
       </ThemedText>
 
-      <Pressable onPress={() => router.push('/quiz/result')}>
-        <Card variant="ivory" style={styles.matchCard}>
-          <ThemedText variant="eyebrow" color={colors.accent}>
+      <Pressable onPress={() => router.push('/quiz/result')} style={styles.matchRow}>
+        <View style={styles.matchText}>
+          <ThemedText variant="eyebrow" color={colors.textSecondary}>
             YOUR #1 MATCH
           </ThemedText>
-          <ThemedText variant="displaySmall" color={colors.textOnIvory} style={styles.matchName}>
+          <ThemedText variant="displayMedium" color={colors.textPrimary} style={styles.matchName}>
             {category.name}
           </ThemedText>
-          <Button label="Continue My Plan" onPress={() => router.push('/plan')} style={styles.matchButton} />
-        </Card>
+          <Button label="Continue My Plan" onPress={() => router.push('/plan')} fullWidth={false} />
+        </View>
+        <EditorialImage variant="portrait" style={styles.matchImage} />
       </Pressable>
 
       <View style={styles.statsRow}>
-        <Card variant="surface" style={styles.statCard}>
-          <ThemedText variant="displaySmall" color={colors.textPrimary}>
-            {savedPlanItems.length}
-          </ThemedText>
-          <ThemedText variant="caption" color={colors.textSecondary}>
-            Saved to Plan
-          </ThemedText>
-        </Card>
-        <Pressable style={styles.statCardFlex} onPress={() => router.push('/passport')}>
-          <Card variant="surface" style={styles.statCard}>
-            <ThemedText variant="displaySmall" color={colors.textPrimary}>
-              {treatmentsThisYear}
-            </ThemedText>
-            <ThemedText variant="caption" color={colors.textSecondary}>
-              Treatments This Year
-            </ThemedText>
-          </Card>
-        </Pressable>
+        <ThemedText variant="body" color={colors.textSecondary}>
+          {savedPlanItems.length} saved to Plan
+        </ThemedText>
+        <ThemedText variant="body" color={colors.textSecondary}>
+          {treatmentsThisYear} treatments this year
+        </ThemedText>
       </View>
+      <Rule style={styles.statsRule} />
 
-      <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
-        QUICK ACTIONS
-      </ThemedText>
-      <View style={styles.quickActions}>
-        {quickActions.map((action) => (
-          <Card key={action.href} variant="surface" style={styles.quickActionCard}>
-            <Button
-              label={action.label}
-              icon={action.icon}
-              variant="ghost"
-              fullWidth={false}
-              onPress={() => router.push(action.href)}
-              style={styles.quickActionButton}
-            />
-          </Card>
-        ))}
-      </View>
+      <DiscoverModules />
+      <BestieTeaser onPress={() => router.push('/botox-bestie')} />
     </>
   );
 }
@@ -153,46 +142,41 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   headline: {
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
+  },
+  heroImage: {
+    marginBottom: spacing.lg,
   },
   primaryCta: {
-    marginBottom: spacing.xl,
+    marginBottom: spacing.md,
   },
-  introCard: {
-    marginBottom: spacing.xl,
+  modules: {
+    marginTop: spacing.md,
   },
-  sectionLabel: {
-    marginBottom: spacing.sm,
+  matchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginBottom: spacing.md,
   },
-  quickActions: {
-    gap: spacing.sm,
-  },
-  quickActionCard: {
-    padding: spacing.xs,
-  },
-  quickActionButton: {
-    justifyContent: 'flex-start',
-    paddingHorizontal: spacing.sm,
-  },
-  matchCard: {
-    marginBottom: spacing.lg,
+  matchText: {
+    flex: 1,
   },
   matchName: {
     marginTop: spacing.xs,
     marginBottom: spacing.md,
   },
-  matchButton: {
-    marginTop: spacing.xs,
+  matchImage: {
+    width: 110,
   },
   statsRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.xl,
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
   },
-  statCardFlex: {
-    flex: 1,
-  },
-  statCard: {
-    flex: 1,
+  statsRule: {
+    width: '100%',
+    opacity: 0.4,
+    marginBottom: spacing.sm,
   },
 });

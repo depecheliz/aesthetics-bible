@@ -4,50 +4,70 @@ import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
-import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { colors, radius, spacing } from '../../constants/theme';
+import { Rule } from '../../components/ui/Rule';
+import { EditorialImage } from '../../components/media/EditorialImage';
+import { colors, spacing } from '../../constants/theme';
 
-type SlotId = 'baseline' | 'follow_up';
+type StageId = 'baseline' | 'two_weeks' | 'one_month' | 'three_months';
 
-function PhotoSlotCard({
-  title,
+const stages: { id: StageId; label: string }[] = [
+  { id: 'baseline', label: 'Baseline' },
+  { id: 'two_weeks', label: '2 Weeks' },
+  { id: 'one_month', label: '1 Month' },
+  { id: 'three_months', label: '3 Months' },
+];
+
+function PhotoStageRow({
+  label,
   filled,
   onAdd,
 }: {
-  title: string;
+  label: string;
   filled: boolean;
   onAdd: () => void;
 }) {
   return (
-    <Card variant="surface" style={styles.slotCard}>
-      <View style={styles.slotPlaceholder}>
-        <Feather name={filled ? 'image' : 'camera'} size={24} color={filled ? colors.accent : colors.textSecondary} />
+    <View style={styles.stageRow}>
+      <View style={styles.stageImageWrap}>
+        <EditorialImage
+          variant="skin-detail"
+          label={filled ? undefined : 'ADD PHOTO'}
+          style={styles.stageImage}
+        />
       </View>
-      <ThemedText variant="body" color={colors.textPrimary} style={styles.slotTitle}>
-        {title}
-      </ThemedText>
-      <Button
-        label={filled ? 'Replace Photo' : 'Add Photo'}
-        icon={filled ? 'refresh-cw' : 'plus'}
-        variant="secondary"
-        onPress={onAdd}
-      />
-    </Card>
+      <View style={styles.stageMeta}>
+        <ThemedText variant="bodyLarge" color={colors.textPrimary}>
+          {label}
+        </ThemedText>
+        <Button
+          label={filled ? 'Replace' : 'Add Photo'}
+          icon={filled ? 'refresh-cw' : 'plus'}
+          variant="ghost"
+          fullWidth={false}
+          onPress={onAdd}
+        />
+      </View>
+    </View>
   );
 }
 
 export default function ProgressPhotosScreen() {
-  const [filled, setFilled] = useState<Record<SlotId, boolean>>({ baseline: false, follow_up: false });
+  const [filled, setFilled] = useState<Record<StageId, boolean>>({
+    baseline: false,
+    two_weeks: false,
+    one_month: false,
+    three_months: false,
+  });
 
-  const addPhoto = (slot: SlotId) => {
+  const addPhoto = (stage: StageId) => {
     // MOCK: no camera/library integration yet — this simulates a photo
-    // having been added so the surrounding UI (before/after, timeline)
-    // can be previewed without wiring real device storage.
-    setFilled((prev) => ({ ...prev, [slot]: true }));
+    // having been added so the surrounding UI (comparison, progress
+    // story) can be previewed without wiring real device storage.
+    setFilled((prev) => ({ ...prev, [stage]: true }));
   };
 
-  const bothFilled = filled.baseline && filled.follow_up;
+  const filledCount = Object.values(filled).filter(Boolean).length;
 
   return (
     <Screen>
@@ -55,69 +75,41 @@ export default function ProgressPhotosScreen() {
         <ScreenHeader title="Progress Photos" />
 
         <ThemedText variant="body" color={colors.textSecondary} style={styles.intro}>
-          Private tracking photos for your own history — separate from Preview and Glow, which create
-          AI-generated images. These stay on this device for now.
+          Private tracking photos for your own history — separate from Preview and Glow, which
+          create AI-generated images. These stay on this device for now.
         </ThemedText>
 
-        <View style={styles.slotsRow}>
-          <PhotoSlotCard title="Baseline" filled={filled.baseline} onAdd={() => addPhoto('baseline')} />
-          <PhotoSlotCard title="Follow-Up" filled={filled.follow_up} onAdd={() => addPhoto('follow_up')} />
+        <Rule style={styles.rule} />
+
+        {stages.map((stage) => (
+          <PhotoStageRow
+            key={stage.id}
+            label={stage.label}
+            filled={filled[stage.id]}
+            onAdd={() => addPhoto(stage.id)}
+          />
+        ))}
+
+        <Rule style={styles.rule} />
+
+        <View style={styles.storyRow}>
+          <Feather name="film" size={16} color={colors.textMuted} style={styles.storyIcon} />
+          <View style={styles.storyText}>
+            <ThemedText variant="bodyLarge" color={colors.textPrimary}>
+              Create Progress Story
+            </ThemedText>
+            <ThemedText variant="caption" color={colors.textSecondary}>
+              {filledCount >= 2
+                ? 'Turn your photos into a private "Then → Now" story.'
+                : 'Add at least two photos to unlock a shareable story.'}
+            </ThemedText>
+          </View>
+          <Button label="Create" variant="secondary" fullWidth={false} disabled={filledCount < 2} />
         </View>
 
-        <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
-          BEFORE / AFTER
+        <ThemedText variant="caption" color={colors.textMuted} style={styles.footnote}>
+          Photos stay private unless you explicitly choose to create and export a share image.
         </ThemedText>
-        {bothFilled ? (
-          <Card variant="surface" style={styles.compareCard}>
-            <View style={styles.compareRow}>
-              <View style={styles.comparePane}>
-                <Feather name="image" size={20} color={colors.accent} />
-                <ThemedText variant="caption" color={colors.textSecondary}>
-                  Baseline
-                </ThemedText>
-              </View>
-              <View style={styles.compareDivider} />
-              <View style={styles.comparePane}>
-                <Feather name="image" size={20} color={colors.accent} />
-                <ThemedText variant="caption" color={colors.textSecondary}>
-                  Follow-Up
-                </ThemedText>
-              </View>
-            </View>
-          </Card>
-        ) : (
-          <ThemedText variant="body" color={colors.textSecondary} style={styles.compareEmpty}>
-            Add both a baseline and a follow-up photo to preview a side-by-side comparison.
-          </ThemedText>
-        )}
-
-        <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
-          TIMELINE
-        </ThemedText>
-        {!filled.baseline && !filled.follow_up ? (
-          <ThemedText variant="body" color={colors.textSecondary}>
-            Your photo timeline will appear here once you add your first photo.
-          </ThemedText>
-        ) : (
-          <>
-            {filled.baseline && (
-              <View style={styles.timelineRow}>
-                <View style={styles.timelineDot} />
-                <ThemedText variant="body" color={colors.textPrimary}>
-                  Baseline photo added
-                </ThemedText>
-              </View>
-            )}
-            {filled.follow_up && (
-              <View style={styles.timelineRow}>
-                <View style={styles.timelineDot} />
-                <ThemedText variant="body" color={colors.textPrimary}>
-                  Follow-up photo added
-                </ThemedText>
-              </View>
-            )}
-          </>
-        )}
       </ScrollView>
     </Screen>
   );
@@ -130,63 +122,38 @@ const styles = StyleSheet.create({
   intro: {
     marginBottom: spacing.lg,
   },
-  slotsRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  slotCard: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  slotPlaceholder: {
+  rule: {
     width: '100%',
-    aspectRatio: 1,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
+    opacity: 0.4,
     marginBottom: spacing.sm,
   },
-  slotTitle: {
-    marginBottom: spacing.sm,
-  },
-  sectionLabel: {
-    marginBottom: spacing.sm,
-  },
-  compareCard: {
-    marginBottom: spacing.lg,
-  },
-  compareRow: {
+  stageRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: spacing.md,
+    gap: spacing.md,
   },
-  comparePane: {
+  stageImageWrap: {
+    width: 72,
+  },
+  stageImage: {},
+  stageMeta: {
     flex: 1,
-    alignItems: 'center',
-    gap: spacing.xxs,
   },
-  compareDivider: {
-    width: 1,
-    height: 48,
-    backgroundColor: colors.border,
-    marginHorizontal: spacing.sm,
-  },
-  compareEmpty: {
-    marginBottom: spacing.lg,
-  },
-  timelineRow: {
+  storyRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.sm,
+    paddingVertical: spacing.md,
+    gap: spacing.sm,
   },
-  timelineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.accent,
-    marginRight: spacing.sm,
+  storyIcon: {
+    marginTop: 2,
+  },
+  storyText: {
+    flex: 1,
+  },
+  footnote: {
+    marginTop: spacing.lg,
+    marginBottom: spacing.xl,
   },
 });

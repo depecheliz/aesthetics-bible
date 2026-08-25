@@ -1,7 +1,7 @@
 import { Text } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import AddPassportEntryScreen from './add';
-import { AppStateProvider, useAppState } from '../../lib/state/AppStateContext';
+import AddPassportEntryScreen from '../../../app/passport/add';
+import { AppStateProvider, useAppState } from '../../../lib/state/AppStateContext';
 
 const mockBack = jest.fn();
 

@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react-native';
-import HomeScreen from './index';
-import { AppStateProvider } from '../../lib/state/AppStateContext';
-import { getRecommendation } from '../../src/domain/recommendation';
-import type { QuizAnswers } from '../../src/domain/quiz';
+import HomeScreen from '../../../app/(tabs)/index';
+import { AppStateProvider } from '../../../lib/state/AppStateContext';
+import { getRecommendation } from '../../../src/domain/recommendation';
+import type { QuizAnswers } from '../../../src/domain/quiz';
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn(), replace: jest.fn() },

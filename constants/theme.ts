@@ -42,6 +42,12 @@ export const colors = {
   // Borders & dividers
   border: '#2C2A26',
   borderOnIvory: '#DDD0BC',
+  rule: palette.champagne,
+  ruleOnIvory: palette.champagne,
+
+  // Editorial image placeholders (no real photography wired up yet)
+  imageSurface: '#1D1B17',
+  imageSurfaceOnIvory: '#ECE1CE',
 
   // Semantic
   success: '#7A9B7E',
@@ -80,9 +86,12 @@ export const fontFamily = {
 } as const;
 
 export const typography = {
+  displayHero: { fontFamily: fontFamily.display, fontSize: 40, lineHeight: 46, letterSpacing: 0.2 },
   displayLarge: { fontFamily: fontFamily.display, fontSize: 34, lineHeight: 40, letterSpacing: 0.2 },
   displayMedium: { fontFamily: fontFamily.display, fontSize: 26, lineHeight: 32, letterSpacing: 0.2 },
   displaySmall: { fontFamily: fontFamily.display, fontSize: 20, lineHeight: 26, letterSpacing: 0.2 },
+  statHero: { fontFamily: fontFamily.display, fontSize: 52, lineHeight: 56, letterSpacing: 0.2 },
+  numberLabel: { fontFamily: fontFamily.displayRegular, fontSize: 15, lineHeight: 18, letterSpacing: 1 },
   eyebrow: { fontFamily: fontFamily.bodySemiBold, fontSize: 12, lineHeight: 16, letterSpacing: 1.6 },
   bodyLarge: { fontFamily: fontFamily.body, fontSize: 16, lineHeight: 24, letterSpacing: 0.1 },
   body: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20, letterSpacing: 0.1 },

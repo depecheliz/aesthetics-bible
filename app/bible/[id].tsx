@@ -4,8 +4,8 @@ import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
-import { Card } from '../../components/ui/Card';
 import { InfoRow } from '../../components/ui/InfoRow';
+import { Rule } from '../../components/ui/Rule';
 import { getBibleTreatmentById } from '../../src/domain/bible';
 import { treatmentCategories } from '../../src/domain/recommendation';
 import { colors, spacing } from '../../constants/theme';
@@ -41,7 +41,7 @@ export default function TreatmentDetailScreen() {
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
           THE BIBLE · {category.name.toUpperCase()}
         </ThemedText>
-        <ThemedText variant="displayMedium" style={styles.title}>
+        <ThemedText variant="displayHero" style={styles.title}>
           {treatment.name}
         </ThemedText>
         {treatment.aliases.length > 0 && (
@@ -53,12 +53,11 @@ export default function TreatmentDetailScreen() {
           {treatment.overview}
         </ThemedText>
 
-        <Card variant="surface" style={styles.infoCard}>
-          <InfoRow label="BEST SUITED FOR" value={category.bestSuitedFor} />
-          <InfoRow label="DOWNTIME" value={category.downtimeContext} />
-          <InfoRow label="TYPICAL COST" value={category.costContext} />
-          <InfoRow label="LONGEVITY" value={category.longevityContext} />
-        </Card>
+        <Rule style={styles.rule} />
+        <InfoRow label="BEST SUITED FOR" value={category.bestSuitedFor} />
+        <InfoRow label="DOWNTIME" value={category.downtimeContext} />
+        <InfoRow label="TYPICAL COST" value={category.costContext} />
+        <InfoRow label="LONGEVITY" value={category.longevityContext} />
 
         <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
           QUESTIONS TO ASK A PROVIDER
@@ -100,10 +99,13 @@ const styles = StyleSheet.create({
   overview: {
     marginBottom: spacing.lg,
   },
-  infoCard: {
-    marginBottom: spacing.lg,
+  rule: {
+    width: '100%',
+    opacity: 0.4,
+    marginBottom: spacing.sm,
   },
   sectionLabel: {
+    marginTop: spacing.lg,
     marginBottom: spacing.sm,
   },
   questionRow: {

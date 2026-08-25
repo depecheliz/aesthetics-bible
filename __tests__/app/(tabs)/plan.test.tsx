@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react-native';
-import PlanScreen from './plan';
-import { AppStateProvider } from '../../lib/state/AppStateContext';
-import { getRecommendation } from '../../src/domain/recommendation';
-import type { QuizAnswers } from '../../src/domain/quiz';
+import PlanScreen from '../../../app/(tabs)/plan';
+import { AppStateProvider } from '../../../lib/state/AppStateContext';
+import { getRecommendation } from '../../../src/domain/recommendation';
+import type { QuizAnswers } from '../../../src/domain/quiz';
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn(), replace: jest.fn() },
@@ -25,8 +25,8 @@ describe('Plan tab', () => {
       </AppStateProvider>,
     );
 
-    expect(screen.getByText('Your Aesthetics Plan Starts Here')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Build My Aesthetics Plan' })).toBeTruthy();
+    expect(screen.getByText('Your face.\nYour goals.\nYour plan.')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Build My Plan' })).toBeTruthy();
   });
 
   it('shows the full plan once a recommendation result exists', async () => {
@@ -40,6 +40,6 @@ describe('Plan tab', () => {
 
     expect(screen.getByText('MY AESTHETICS PLAN')).toBeTruthy();
     expect(screen.getAllByText(result.topMatch.category.name).length).toBeGreaterThan(0);
-    expect(screen.queryByText('Your Aesthetics Plan Starts Here')).toBeNull();
+    expect(screen.queryByText('Your face.\nYour goals.\nYour plan.')).toBeNull();
   });
 });

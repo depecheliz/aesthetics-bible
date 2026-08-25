@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import QuizScreen from './index';
-import { AppStateProvider } from '../../lib/state/AppStateContext';
-import { quizQuestions } from '../../src/domain/quiz';
+import QuizScreen from '../../../app/quiz/index';
+import { AppStateProvider } from '../../../lib/state/AppStateContext';
+import { quizQuestions } from '../../../src/domain/quiz';
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();

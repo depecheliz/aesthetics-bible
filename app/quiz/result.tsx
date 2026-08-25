@@ -4,11 +4,13 @@ import { router } from 'expo-router';
 import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
-import { Card } from '../../components/ui/Card';
 import { InfoRow } from '../../components/ui/InfoRow';
+import { Rule } from '../../components/ui/Rule';
 import { TreatmentActionsGrid } from '../../components/plan/TreatmentActionsGrid';
 import { PremiumRoadmapCard } from '../../components/plan/PremiumRoadmapCard';
+import { ShareCard, ShareCardStatRow } from '../../components/media/ShareCard';
 import { useAppState } from '../../lib/state/AppStateContext';
+import { intensityLabels } from '../../src/domain/quiz';
 import { colors, spacing } from '../../constants/theme';
 
 export default function ResultScreen() {
@@ -33,21 +35,23 @@ export default function ResultScreen() {
         <ScreenHeader />
 
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
-          YOUR #1 AREA TO EXPLORE
+          YOUR AESTHETICS PROFILE
         </ThemedText>
-        <ThemedText variant="displayMedium" style={styles.categoryName}>
+        <ThemedText variant="body" color={colors.textSecondary} style={styles.subEyebrow}>
+          Your #1 Area to Explore
+        </ThemedText>
+        <ThemedText variant="displayHero" style={styles.categoryName}>
           {category.name}
         </ThemedText>
         <ThemedText variant="bodyLarge" color={colors.textSecondary} style={styles.explanation}>
           {topMatch.explanation}
         </ThemedText>
 
-        <Card variant="surface" style={styles.infoCard}>
-          <InfoRow label="BEST SUITED FOR" value={category.bestSuitedFor} />
-          <InfoRow label="DOWNTIME" value={category.downtimeContext} />
-          <InfoRow label="TYPICAL COST" value={category.costContext} />
-          <InfoRow label="LONGEVITY" value={category.longevityContext} />
-        </Card>
+        <Rule style={styles.rule} />
+        <InfoRow label="BEST SUITED FOR" value={category.bestSuitedFor} />
+        <InfoRow label="DOWNTIME" value={category.downtimeContext} />
+        <InfoRow label="TYPICAL COST" value={category.costContext} />
+        <InfoRow label="LONGEVITY" value={category.longevityContext} />
         <ThemedText variant="caption" color={colors.textSecondary} style={styles.budgetNote}>
           {budgetNote}
         </ThemedText>
@@ -55,6 +59,12 @@ export default function ResultScreen() {
         <View style={styles.actionsWrap}>
           <TreatmentActionsGrid categoryId={category.id} />
         </View>
+
+        <ShareCard eyebrow="A KEEPSAKE" title="My Aesthetics Profile">
+          <ShareCardStatRow label="Top Goal" value={category.name} />
+          <ShareCardStatRow label="Style" value={intensityLabels[result.intensity]} />
+          <ShareCardStatRow label="#1 Category" value={category.name} />
+        </ShareCard>
 
         <PremiumRoadmapCard alternates={alternates} />
       </ScrollView>
@@ -68,16 +78,21 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     marginTop: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  subEyebrow: {
     marginBottom: spacing.xs,
   },
   categoryName: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   explanation: {
     marginBottom: spacing.lg,
   },
-  infoCard: {
-    marginBottom: spacing.xs,
+  rule: {
+    width: '100%',
+    opacity: 0.4,
+    marginBottom: spacing.sm,
   },
   budgetNote: {
     marginTop: spacing.sm,

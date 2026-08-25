@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import BibleScreen from './bible';
+import BibleScreen from '../../../app/(tabs)/bible';
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn(), replace: jest.fn() },
@@ -8,7 +8,8 @@ jest.mock('expo-router', () => ({
 describe('Bible tab', () => {
   it('shows the full starter library by default', async () => {
     await render(<BibleScreen />);
-    expect(screen.getByText('Botox')).toBeTruthy();
+    // "Botox" appears in both the Most Explored teaser and the full index.
+    expect(screen.getAllByText('Botox').length).toBeGreaterThan(0);
     expect(screen.getByText('Sofwave')).toBeTruthy();
   });
 

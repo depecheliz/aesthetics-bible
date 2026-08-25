@@ -1,20 +1,19 @@
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
 import { Screen } from '../components/layout/Screen';
 import { ScreenHeader } from '../components/layout/ScreenHeader';
 import { ThemedText } from '../components/typography/ThemedText';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { Rule } from '../components/ui/Rule';
 import { colors, radius, spacing } from '../constants/theme';
 
-const premiumFeatures = [
-  'Full personalized roadmap',
-  'Complete treatment library',
-  'Aesthetics Passport',
-  'AI Preview + Glow allowance',
-  'Beauty Calendar',
-  'Beauty Budget',
-  'Comparisons',
+const premiumModules: { name: string; description: string }[] = [
+  { name: 'PLAN', description: 'Your complete personalized roadmap.' },
+  { name: 'PREVIEW', description: 'Explore aesthetic possibilities.' },
+  { name: 'GLOW', description: 'Create polished social images.' },
+  { name: 'PASSPORT', description: 'Track every treatment and result.' },
+  { name: 'THE BIBLE', description: 'Understand your options.' },
+  { name: 'BOTOX BESTIE', description: 'Ask the questions you actually want answered.' },
 ];
 
 // MOCK PAYWALL: no RevenueCat/entitlement wiring yet. Pricing shown here
@@ -33,20 +32,22 @@ export default function PaywallScreen() {
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
           THE AESTHETICS BIBLE PREMIUM
         </ThemedText>
-        <ThemedText variant="displayMedium" style={styles.headline}>
-          Unlock your complete aesthetics journey.
+        <ThemedText variant="displayHero" style={styles.headline}>
+          Your entire aesthetics journey, beautifully organized.
         </ThemedText>
 
-        <Card variant="surface" style={styles.featuresCard}>
-          {premiumFeatures.map((feature) => (
-            <View key={feature} style={styles.featureRow}>
-              <Feather name="check" size={16} color={colors.accent} style={styles.featureIcon} />
-              <ThemedText variant="body" color={colors.textPrimary}>
-                {feature}
-              </ThemedText>
-            </View>
-          ))}
-        </Card>
+        <Rule style={styles.rule} />
+
+        {premiumModules.map((module) => (
+          <View key={module.name} style={styles.moduleRow}>
+            <ThemedText variant="eyebrow" color={colors.accent} style={styles.moduleName}>
+              {module.name}
+            </ThemedText>
+            <ThemedText variant="bodyLarge" color={colors.textPrimary}>
+              {module.description}
+            </ThemedText>
+          </View>
+        ))}
 
         <Card variant="ivory" style={[styles.priceCard, styles.priceCardPrimary]}>
           <View style={styles.bestValueTag}>
@@ -54,26 +55,27 @@ export default function PaywallScreen() {
               BEST VALUE
             </ThemedText>
           </View>
-          <ThemedText variant="displaySmall" color={colors.textOnIvory}>
-            $99/year
+          <ThemedText variant="statHero" color={colors.textOnIvory}>
+            $99
+          </ThemedText>
+          <ThemedText variant="eyebrow" color={colors.textOnIvory} style={styles.priceUnit}>
+            PER YEAR
           </ThemedText>
           <ThemedText variant="caption" color={colors.textMuted} style={styles.priceSubtext}>
             Just $8.25/month, billed annually
           </ThemedText>
-          <Button label="Start My Journey" onPress={handleMockPurchase} style={styles.priceButton} />
+          <Button label="Unlock My Aesthetics Bible" onPress={handleMockPurchase} style={styles.priceButton} />
         </Card>
 
-        <Card variant="outline" style={styles.priceCard}>
-          <ThemedText variant="displaySmall" color={colors.textPrimary}>
-            $14.99/month
+        <View style={styles.secondaryPriceRow}>
+          <ThemedText variant="body" color={colors.textSecondary}>
+            Or $14.99/month
           </ThemedText>
-          <ThemedText variant="caption" color={colors.textSecondary} style={styles.priceSubtext}>
-            Billed monthly, cancel anytime
-          </ThemedText>
-          <Button label="Continue Monthly" variant="secondary" onPress={handleMockPurchase} style={styles.priceButton} />
-        </Card>
+          <Button label="Continue Monthly" variant="ghost" fullWidth={false} onPress={handleMockPurchase} />
+        </View>
 
         <ThemedText variant="caption" color={colors.textSecondary} style={styles.footnote}>
+          Preview and Glow are included with a monthly Premium allowance — not unlimited generations.
           Cancel anytime. Restore purchases from your account settings.
         </ThemedText>
       </ScrollView>
@@ -87,24 +89,26 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     marginTop: spacing.md,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
   headline: {
     marginBottom: spacing.lg,
   },
-  featuresCard: {
-    marginBottom: spacing.lg,
+  rule: {
+    width: '100%',
+    opacity: 0.4,
+    marginBottom: spacing.md,
   },
-  featureRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
+  moduleRow: {
+    marginBottom: spacing.md,
   },
-  featureIcon: {
-    marginRight: spacing.xs,
+  moduleName: {
+    marginBottom: spacing.xxs,
+    letterSpacing: 1.6,
   },
   priceCard: {
-    marginBottom: spacing.md,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
   },
   priceCardPrimary: {
     borderWidth: 1,
@@ -118,12 +122,21 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     marginBottom: spacing.sm,
   },
-  priceSubtext: {
+  priceUnit: {
     marginTop: spacing.xxs,
+  },
+  priceSubtext: {
+    marginTop: spacing.xs,
     marginBottom: spacing.md,
   },
   priceButton: {
     marginTop: spacing.xs,
+  },
+  secondaryPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.lg,
   },
   footnote: {
     marginTop: spacing.sm,

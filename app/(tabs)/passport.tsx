@@ -4,7 +4,8 @@ import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
 import { ThemedText } from '../../components/typography/ThemedText';
 import { Button } from '../../components/ui/Button';
-import { SummaryCard } from '../../components/passport/SummaryCard';
+import { Rule } from '../../components/ui/Rule';
+import { EditorialImage } from '../../components/media/EditorialImage';
 import { EntryCard } from '../../components/passport/EntryCard';
 import { useAppState } from '../../lib/state/AppStateContext';
 import { formatCurrency, sortEntriesByDateDesc, summarizeEntriesThisYear } from '../../src/domain/passport';
@@ -13,16 +14,19 @@ import { colors, spacing } from '../../constants/theme';
 function PassportEmptyState() {
   return (
     <Screen edges={['top']}>
-      <View style={styles.emptyWrap}>
-        <Feather name="briefcase" size={28} color={colors.accent} style={styles.emptyIcon} />
-        <ThemedText variant="displaySmall" style={styles.emptyTitle}>
+      <ScrollView contentContainerStyle={styles.emptyContent} showsVerticalScrollIndicator={false}>
+        <EditorialImage variant="skin-detail" style={styles.emptyImage} />
+        <ThemedText variant="eyebrow" color={colors.accent} style={styles.emptyEyebrow}>
+          PASSPORT
+        </ThemedText>
+        <ThemedText variant="displayLarge" style={styles.emptyTitle}>
           Your Aesthetics History, All in One Place
         </ThemedText>
         <ThemedText variant="bodyLarge" color={colors.textSecondary} style={styles.emptyBody}>
           Track every treatment, provider, and result — privately, in one timeline you control.
         </ThemedText>
         <Button label="Log My First Treatment" icon="plus" onPress={() => router.push('/passport/add')} />
-      </View>
+      </ScrollView>
     </Screen>
   );
 }
@@ -41,19 +45,31 @@ export default function PassportScreen() {
     <Screen edges={['top']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
-          PASSPORT
+          YOUR YEAR IN AESTHETICS
         </ThemedText>
-        <ThemedText variant="displaySmall" style={styles.title}>
-          Your Aesthetics Passport
+        <ThemedText variant="statHero" color={colors.textPrimary} style={styles.heroStat}>
+          {formatCurrency(spendThisYear)}
         </ThemedText>
 
-        <View style={styles.summaryRow}>
-          <SummaryCard label="Spend This Year" value={formatCurrency(spendThisYear)} />
-          <SummaryCard label="Treatments" value={String(treatmentsThisYear)} />
+        <View style={styles.secondaryStatsRow}>
+          <View style={styles.secondaryStat}>
+            <ThemedText variant="displaySmall" color={colors.textPrimary}>
+              {treatmentsThisYear}
+            </ThemedText>
+            <ThemedText variant="caption" color={colors.textSecondary}>
+              TREATMENTS
+            </ThemedText>
+          </View>
+          <View style={styles.secondaryStat}>
+            <ThemedText variant="displaySmall" color={colors.textPrimary} numberOfLines={1}>
+              {mostRecent?.treatment ?? '—'}
+            </ThemedText>
+            <ThemedText variant="caption" color={colors.textSecondary}>
+              MOST RECENT
+            </ThemedText>
+          </View>
         </View>
-        <View style={styles.summaryRowSecond}>
-          <SummaryCard label="Most Recent" value={mostRecent?.treatment ?? '—'} />
-        </View>
+        <Rule style={styles.rule} />
 
         <View style={styles.quickActions}>
           <Button
@@ -80,22 +96,31 @@ export default function PassportScreen() {
         {timeline.map((entry) => (
           <EntryCard key={entry.id} entry={entry} onPress={() => router.push(`/passport/${entry.id}`)} />
         ))}
+
+        <View style={styles.wrappedTeaser}>
+          <Feather name="gift" size={16} color={colors.textMuted} style={styles.wrappedIcon} />
+          <ThemedText variant="caption" color={colors.textMuted}>
+            Coming soon: your Aesthetics Wrapped — a shareable look back at your year.
+          </ThemedText>
+        </View>
       </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  emptyWrap: {
-    flex: 1,
-    justifyContent: 'center',
+  emptyContent: {
+    paddingTop: spacing.xl,
     paddingBottom: spacing.xxxl,
   },
-  emptyIcon: {
+  emptyImage: {
+    marginBottom: spacing.lg,
+  },
+  emptyEyebrow: {
     marginBottom: spacing.sm,
   },
   emptyTitle: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   emptyBody: {
     marginBottom: spacing.lg,
@@ -105,28 +130,39 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxxl,
   },
   eyebrow: {
-    marginBottom: spacing.xs,
-  },
-  title: {
-    marginBottom: spacing.lg,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
     marginBottom: spacing.sm,
   },
-  summaryRowSecond: {
+  heroStat: {
+    marginBottom: spacing.lg,
+  },
+  secondaryStatsRow: {
+    flexDirection: 'row',
+    gap: spacing.xl,
+    marginBottom: spacing.md,
+  },
+  secondaryStat: {},
+  rule: {
+    width: '100%',
+    opacity: 0.4,
     marginBottom: spacing.lg,
   },
   quickActions: {
     flexDirection: 'row',
     gap: spacing.sm,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
   },
   quickActionButton: {
     flex: 1,
   },
   sectionLabel: {
     marginBottom: spacing.sm,
+  },
+  wrappedTeaser: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.lg,
+  },
+  wrappedIcon: {
+    marginRight: spacing.xs,
   },
 });

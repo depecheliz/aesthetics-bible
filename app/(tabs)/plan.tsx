@@ -4,8 +4,8 @@ import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
 import { ThemedText } from '../../components/typography/ThemedText';
 import { Button } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
-import { InfoRow } from '../../components/ui/InfoRow';
+import { Rule } from '../../components/ui/Rule';
+import { EditorialImage } from '../../components/media/EditorialImage';
 import { TreatmentActionsGrid } from '../../components/plan/TreatmentActionsGrid';
 import { PremiumRoadmapCard } from '../../components/plan/PremiumRoadmapCard';
 import { useAppState } from '../../lib/state/AppStateContext';
@@ -16,17 +16,20 @@ import { colors, radius, spacing } from '../../constants/theme';
 function PlanEmptyState() {
   return (
     <Screen edges={['top']}>
-      <View style={styles.emptyWrap}>
-        <Feather name="compass" size={28} color={colors.accent} style={styles.emptyIcon} />
-        <ThemedText variant="displaySmall" style={styles.emptyTitle}>
-          Your Aesthetics Plan Starts Here
+      <ScrollView contentContainerStyle={styles.emptyContent} showsVerticalScrollIndicator={false}>
+        <EditorialImage variant="portrait" style={styles.emptyImage} />
+        <ThemedText variant="eyebrow" color={colors.accent} style={styles.emptyEyebrow}>
+          MY AESTHETICS PLAN
+        </ThemedText>
+        <ThemedText variant="displayLarge" style={styles.emptyTitle}>
+          Your face.{'\n'}Your goals.{'\n'}Your plan.
         </ThemedText>
         <ThemedText variant="bodyLarge" color={colors.textSecondary} style={styles.emptyBody}>
-          Answer a few quick questions about your goals, and we&apos;ll build a personalized roadmap —
-          your top match first, with a complete plan to unlock.
+          Answer a few questions about what matters to you and discover the aesthetic categories
+          worth exploring.
         </ThemedText>
-        <Button label="Build My Aesthetics Plan" icon="arrow-right" onPress={() => router.push('/quiz')} />
-      </View>
+        <Button label="Build My Plan" icon="arrow-right" onPress={() => router.push('/quiz')} />
+      </ScrollView>
     </Screen>
   );
 }
@@ -50,30 +53,22 @@ export default function PlanScreen() {
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
           MY AESTHETICS PLAN
         </ThemedText>
-        <ThemedText variant="displaySmall" style={styles.title}>
-          {concernLabels[result.concern]}
-        </ThemedText>
-        <ThemedText variant="caption" color={colors.textSecondary} style={styles.subtitle}>
-          Primary goal · {areaLabels[result.area]}
+        <ThemedText variant="displaySmall" color={colors.textSecondary} style={styles.goalLabel}>
+          {concernLabels[result.concern]} · {areaLabels[result.area]}
         </ThemedText>
 
-        <Card variant="surface" style={styles.topMatchCard}>
-          <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.topMatchLabel}>
-            TOP MATCH
-          </ThemedText>
-          <ThemedText variant="displaySmall" color={colors.textPrimary} style={styles.topMatchName}>
-            {category.name}
-          </ThemedText>
-          <ThemedText variant="body" color={colors.textSecondary} style={styles.topMatchExplanation}>
-            {topMatch.explanation}
-          </ThemedText>
-          <InfoRow label="BEST SUITED FOR" value={category.bestSuitedFor} />
-          <InfoRow label="DOWNTIME" value={category.downtimeContext} />
-        </Card>
+        <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.topMatchLabel}>
+          #1 MATCH
+        </ThemedText>
+        <ThemedText variant="displayHero" color={colors.textPrimary} style={styles.topMatchName}>
+          {category.name}
+        </ThemedText>
+        <ThemedText variant="bodyLarge" color={colors.textSecondary} style={styles.topMatchExplanation}>
+          {topMatch.explanation}
+        </ThemedText>
+        <Rule style={styles.rule} />
 
-        <View style={styles.actionsWrap}>
-          <TreatmentActionsGrid categoryId={category.id} mode="plan" compareWithCategoryId={alternates[0]?.id} />
-        </View>
+        <TreatmentActionsGrid categoryId={category.id} mode="plan" compareWithCategoryId={alternates[0]?.id} />
 
         {savedCategories.length > 0 && (
           <>
@@ -81,15 +76,14 @@ export default function PlanScreen() {
               SAVED TO YOUR PLAN
             </ThemedText>
             {savedCategories.map((saved) => (
-              <Pressable key={saved.id} onPress={() => router.push(`/bible/${saved.id}`)}>
-                <Card variant="outline" style={styles.savedCard}>
-                  <ThemedText variant="body" color={colors.textPrimary}>
-                    {saved.name}
-                  </ThemedText>
-                  <Feather name="chevron-right" size={18} color={colors.textSecondary} />
-                </Card>
+              <Pressable key={saved.id} onPress={() => router.push(`/bible/${saved.id}`)} style={styles.savedRow}>
+                <ThemedText variant="body" color={colors.textPrimary}>
+                  {saved.name}
+                </ThemedText>
+                <Feather name="chevron-right" size={18} color={colors.textSecondary} />
               </Pressable>
             ))}
+            <Rule style={styles.rule} />
           </>
         )}
 
@@ -113,16 +107,18 @@ export default function PlanScreen() {
 }
 
 const styles = StyleSheet.create({
-  emptyWrap: {
-    flex: 1,
-    justifyContent: 'center',
+  emptyContent: {
+    paddingTop: spacing.xl,
     paddingBottom: spacing.xxxl,
   },
-  emptyIcon: {
+  emptyImage: {
+    marginBottom: spacing.lg,
+  },
+  emptyEyebrow: {
     marginBottom: spacing.sm,
   },
   emptyTitle: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   emptyBody: {
     marginBottom: spacing.lg,
@@ -134,35 +130,31 @@ const styles = StyleSheet.create({
   eyebrow: {
     marginBottom: spacing.xs,
   },
-  title: {
-    marginBottom: spacing.xxs,
-  },
-  subtitle: {
-    marginBottom: spacing.lg,
-  },
-  topMatchCard: {
-    marginBottom: spacing.md,
+  goalLabel: {
+    marginBottom: spacing.xl,
   },
   topMatchLabel: {
     marginBottom: spacing.xs,
   },
   topMatchName: {
-    marginBottom: spacing.xs,
-  },
-  topMatchExplanation: {
     marginBottom: spacing.md,
   },
-  actionsWrap: {
+  topMatchExplanation: {
+    marginBottom: spacing.lg,
+  },
+  rule: {
+    width: '100%',
+    opacity: 0.4,
     marginBottom: spacing.lg,
   },
   sectionLabel: {
     marginBottom: spacing.sm,
   },
-  savedCard: {
+  savedRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: spacing.sm,
+    paddingVertical: spacing.sm,
   },
   alternatesRow: {
     flexDirection: 'row',

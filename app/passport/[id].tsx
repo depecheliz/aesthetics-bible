@@ -4,8 +4,8 @@ import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
-import { Card } from '../../components/ui/Card';
 import { InfoRow } from '../../components/ui/InfoRow';
+import { Rule } from '../../components/ui/Rule';
 import { useAppState } from '../../lib/state/AppStateContext';
 import { formatCurrency } from '../../src/domain/passport';
 import { colors, radius, spacing } from '../../constants/theme';
@@ -38,20 +38,19 @@ export default function PassportEntryDetailScreen() {
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
           PASSPORT ENTRY
         </ThemedText>
-        <ThemedText variant="displayMedium" style={styles.title}>
+        <ThemedText variant="displayHero" style={styles.title}>
           {entry.treatment}
         </ThemedText>
         <ThemedText variant="caption" color={colors.textSecondary} style={styles.date}>
           {formatDate(entry.date)}
         </ThemedText>
 
-        <Card variant="surface" style={styles.infoCard}>
-          <InfoRow label="PROVIDER" value={entry.provider || '—'} />
-          <InfoRow label="COST" value={formatCurrency(entry.cost)} />
-          <InfoRow label="PRODUCT" value={entry.product || '—'} />
-          <InfoRow label="AMOUNT / UNITS" value={entry.amountUnits || '—'} />
-          <InfoRow label="AREA" value={entry.area || '—'} />
-        </Card>
+        <Rule style={styles.rule} />
+        <InfoRow label="PROVIDER" value={entry.provider || '—'} />
+        <InfoRow label="COST" value={formatCurrency(entry.cost)} />
+        <InfoRow label="PRODUCT" value={entry.product || '—'} />
+        <InfoRow label="AMOUNT / UNITS" value={entry.amountUnits || '—'} />
+        <InfoRow label="AREA" value={entry.area || '—'} />
 
         <View style={styles.satisfactionRow}>
           <View style={styles.starsRow}>
@@ -131,13 +130,16 @@ const styles = StyleSheet.create({
   date: {
     marginBottom: spacing.lg,
   },
-  infoCard: {
-    marginBottom: spacing.lg,
+  rule: {
+    width: '100%',
+    opacity: 0.4,
+    marginBottom: spacing.sm,
   },
   satisfactionRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: spacing.md,
     marginBottom: spacing.lg,
   },
   starsRow: {
