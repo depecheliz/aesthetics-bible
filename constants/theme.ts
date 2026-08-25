@@ -48,6 +48,7 @@ export const colors = {
   warning: '#C9A97E',
   danger: '#B4635A',
   overlay: 'rgba(11, 11, 12, 0.72)',
+  overlayOnIvory: 'rgba(246, 239, 230, 0.86)',
 } as const;
 
 export const spacing = {
