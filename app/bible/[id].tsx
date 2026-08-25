@@ -6,7 +6,8 @@ import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
 import { Card } from '../../components/ui/Card';
 import { InfoRow } from '../../components/ui/InfoRow';
-import { treatmentCategories, type TreatmentCategoryId } from '../../src/domain/recommendation';
+import { getBibleTreatmentById } from '../../src/domain/bible';
+import { treatmentCategories } from '../../src/domain/recommendation';
 import { colors, spacing } from '../../constants/theme';
 
 const providerQuestions = [
@@ -17,9 +18,9 @@ const providerQuestions = [
 
 export default function TreatmentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const category = treatmentCategories[id as TreatmentCategoryId];
+  const treatment = id ? getBibleTreatmentById(id) : undefined;
 
-  if (!category) {
+  if (!treatment) {
     return (
       <Screen>
         <ScreenHeader />
@@ -30,19 +31,26 @@ export default function TreatmentDetailScreen() {
     );
   }
 
+  const category = treatmentCategories[treatment.categoryId];
+
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader />
 
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
-          THE BIBLE
+          THE BIBLE · {category.name.toUpperCase()}
         </ThemedText>
         <ThemedText variant="displayMedium" style={styles.title}>
-          {category.name}
+          {treatment.name}
         </ThemedText>
+        {treatment.aliases.length > 0 && (
+          <ThemedText variant="caption" color={colors.textSecondary} style={styles.aliases}>
+            Also known as: {treatment.aliases.join(', ')}
+          </ThemedText>
+        )}
         <ThemedText variant="bodyLarge" color={colors.textSecondary} style={styles.overview}>
-          {category.overview}
+          {treatment.overview}
         </ThemedText>
 
         <Card variant="surface" style={styles.infoCard}>
@@ -63,6 +71,10 @@ export default function TreatmentDetailScreen() {
             </ThemedText>
           </View>
         ))}
+
+        <ThemedText variant="caption" color={colors.textMuted} style={styles.footnote}>
+          Content version {treatment.contentVersion} · reviewed {treatment.reviewDate}
+        </ThemedText>
       </ScrollView>
     </Screen>
   );
@@ -80,6 +92,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   title: {
+    marginBottom: spacing.xs,
+  },
+  aliases: {
     marginBottom: spacing.sm,
   },
   overview: {
@@ -101,5 +116,8 @@ const styles = StyleSheet.create({
   },
   questionText: {
     flex: 1,
+  },
+  footnote: {
+    marginTop: spacing.md,
   },
 });

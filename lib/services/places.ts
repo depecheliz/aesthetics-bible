@@ -7,6 +7,7 @@
 export type ProviderResult = {
   id: string;
   name: string;
+  category: string;
   rating: number | null;
   reviewCount: number | null;
   distanceMeters: number | null;

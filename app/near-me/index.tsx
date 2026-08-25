@@ -1,17 +1,21 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
 import { Card } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
+import { useAppState } from '../../lib/state/AppStateContext';
 import type { ProviderResult } from '../../lib/services/places';
 import { colors, spacing } from '../../constants/theme';
 
 // Static sample data standing in for a future Google Places integration.
+// Shaped to match ProviderResult so the UI doesn't change when it's wired up.
 const sampleProviders: ProviderResult[] = [
   {
     id: 'sample-1',
     name: 'Ivory & Ash Aesthetics Studio',
+    category: 'Medical Spa',
     rating: 4.9,
     reviewCount: 214,
     distanceMeters: 1200,
@@ -20,6 +24,7 @@ const sampleProviders: ProviderResult[] = [
   {
     id: 'sample-2',
     name: 'The Skin Atelier',
+    category: 'Dermatology Clinic',
     rating: 4.8,
     reviewCount: 156,
     distanceMeters: 2400,
@@ -28,6 +33,7 @@ const sampleProviders: ProviderResult[] = [
   {
     id: 'sample-3',
     name: 'Maison Derma Clinic',
+    category: 'Aesthetics Clinic',
     rating: 4.7,
     reviewCount: 98,
     distanceMeters: 3100,
@@ -39,6 +45,66 @@ function formatDistance(meters: number | null): string {
   if (meters === null) return '';
   const miles = meters / 1609.34;
   return `${miles.toFixed(1)} mi`;
+}
+
+function ProviderCard({ provider }: { provider: ProviderResult }) {
+  const { savedProviderIds, toggleSavedProvider } = useAppState();
+  const saved = savedProviderIds.includes(provider.id);
+
+  return (
+    <Card variant="surface" style={styles.providerCard}>
+      <View style={styles.headerRow}>
+        <View style={styles.headerText}>
+          <ThemedText variant="bodyLarge" color={colors.textPrimary}>
+            {provider.name}
+          </ThemedText>
+          <ThemedText variant="caption" color={colors.textSecondary}>
+            {provider.category}
+          </ThemedText>
+        </View>
+      </View>
+
+      <View style={styles.metaRow}>
+        <Feather name="star" size={14} color={colors.accent} style={styles.metaIcon} />
+        <ThemedText variant="caption" color={colors.textSecondary}>
+          {provider.rating?.toFixed(1)} ({provider.reviewCount} reviews) · {formatDistance(provider.distanceMeters)}
+        </ThemedText>
+      </View>
+      <View style={styles.metaRow}>
+        <Feather name="map-pin" size={14} color={colors.textSecondary} style={styles.metaIcon} />
+        <ThemedText variant="caption" color={colors.textSecondary}>
+          {provider.address}
+        </ThemedText>
+      </View>
+
+      <View style={styles.actionsRow}>
+        <Button
+          label="View"
+          icon="eye"
+          variant="secondary"
+          fullWidth={false}
+          style={styles.actionButton}
+          onPress={() => Alert.alert(provider.name, 'A full provider profile will be available in a future update.')}
+        />
+        <Button
+          label={saved ? 'Saved' : 'Save'}
+          icon={saved ? 'check' : 'bookmark'}
+          variant={saved ? 'ghost' : 'secondary'}
+          fullWidth={false}
+          style={styles.actionButton}
+          onPress={() => toggleSavedProvider(provider.id)}
+        />
+        <Button
+          label="Directions"
+          icon="navigation"
+          variant="secondary"
+          fullWidth={false}
+          style={styles.actionButton}
+          onPress={() => Alert.alert('Directions', 'Directions will open in your maps app in a future update.')}
+        />
+      </View>
+    </Card>
+  );
 }
 
 export default function NearMeScreen() {
@@ -58,23 +124,7 @@ export default function NearMeScreen() {
         </ThemedText>
 
         {sampleProviders.map((provider) => (
-          <Card key={provider.id} variant="surface" style={styles.providerCard}>
-            <ThemedText variant="bodyLarge" color={colors.textPrimary} style={styles.providerName}>
-              {provider.name}
-            </ThemedText>
-            <View style={styles.metaRow}>
-              <Feather name="star" size={14} color={colors.accent} style={styles.metaIcon} />
-              <ThemedText variant="caption" color={colors.textSecondary}>
-                {provider.rating?.toFixed(1)} ({provider.reviewCount} reviews) · {formatDistance(provider.distanceMeters)}
-              </ThemedText>
-            </View>
-            <View style={styles.metaRow}>
-              <Feather name="map-pin" size={14} color={colors.textSecondary} style={styles.metaIcon} />
-              <ThemedText variant="caption" color={colors.textSecondary}>
-                {provider.address}
-              </ThemedText>
-            </View>
-          </Card>
+          <ProviderCard key={provider.id} provider={provider} />
         ))}
       </ScrollView>
     </Screen>
@@ -98,8 +148,12 @@ const styles = StyleSheet.create({
   providerCard: {
     marginBottom: spacing.sm,
   },
-  providerName: {
+  headerRow: {
+    flexDirection: 'row',
     marginBottom: spacing.xs,
+  },
+  headerText: {
+    flex: 1,
   },
   metaRow: {
     flexDirection: 'row',
@@ -108,5 +162,14 @@ const styles = StyleSheet.create({
   },
   metaIcon: {
     marginRight: spacing.xs,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+  },
+  actionButton: {
+    flex: 1,
+    paddingHorizontal: spacing.xs,
   },
 });

@@ -214,7 +214,7 @@ export const treatmentCategories: Record<TreatmentCategoryId, TreatmentCategory>
   },
 };
 
-const concernCandidates: Record<ConcernId, TreatmentCategoryId[]> = {
+export const concernCandidates: Record<ConcernId, TreatmentCategoryId[]> = {
   fine_lines: ['tox', 'skin_boosters', 'peels', 'skincare'],
   sagging_skin: ['ultrasound', 'rf', 'threads', 'biostimulators'],
   pigmentation: ['lasers', 'peels', 'skincare', 'at_home_devices'],
