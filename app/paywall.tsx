@@ -7,6 +7,7 @@ import { Card } from '../components/ui/Card';
 import { Rule } from '../components/ui/Rule';
 import { BeforeAfterFrame } from '../components/media/BeforeAfterFrame';
 import { Monogram } from '../components/brand/Monogram';
+import { campaignImages } from '../assets/brand/campaign';
 import { colors, radius, spacing } from '../constants/theme';
 
 const premiumModules: { name: string; description: string }[] = [
@@ -41,7 +42,12 @@ export default function PaywallScreen() {
           Your entire aesthetics journey, beautifully organized.
         </ThemedText>
 
-        <BeforeAfterFrame leftLabel="TODAY" rightLabel="ORGANIZED" />
+        <BeforeAfterFrame
+          leftLabel="TODAY"
+          rightLabel="ORGANIZED"
+          leftUri={campaignImages.homeHero}
+          rightUri={campaignImages.paywallStory}
+        />
         <ThemedText variant="caption" color={colors.textMuted} style={styles.storyCaption}>
           From scattered notes and screenshots to one private, beautiful record.
         </ThemedText>

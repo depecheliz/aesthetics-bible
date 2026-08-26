@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View, type ImageSourcePropType } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../typography/ThemedText';
 import { Rule } from '../ui/Rule';
@@ -14,6 +14,8 @@ type EditorialModuleProps = {
   subtitle: string;
   layout: EditorialModuleLayout;
   imageVariant?: EditorialImageVariant;
+  /** Override the variant's default campaign photo for this module. */
+  imageUri?: ImageSourcePropType;
   onPress: () => void;
 };
 
@@ -23,7 +25,16 @@ type EditorialModuleProps = {
  * while still reading as distinct (see CLAUDE.md: avoid repeated card
  * patterns).
  */
-export function EditorialModule({ number, eyebrow, title, subtitle, layout, imageVariant, onPress }: EditorialModuleProps) {
+export function EditorialModule({
+  number,
+  eyebrow,
+  title,
+  subtitle,
+  layout,
+  imageVariant,
+  imageUri,
+  onPress,
+}: EditorialModuleProps) {
   const textBlock = (
     <View style={styles.textBlock}>
       <ThemedText variant="numberLabel" color={colors.textMuted}>
@@ -50,16 +61,16 @@ export function EditorialModule({ number, eyebrow, title, subtitle, layout, imag
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={title} style={styles.wrap}>
       {layout === 'image-top' && imageVariant && (
-        <EditorialImage variant={imageVariant} style={styles.imageTop} />
+        <EditorialImage variant={imageVariant} uri={imageUri} style={styles.imageTop} />
       )}
       {layout === 'image-right' && imageVariant ? (
         <View style={styles.row}>
           <View style={styles.rowText}>{textBlock}</View>
-          <EditorialImage variant={imageVariant} style={styles.rowImage} />
+          <EditorialImage variant={imageVariant} uri={imageUri} style={styles.rowImage} />
         </View>
       ) : layout === 'image-left' && imageVariant ? (
         <View style={styles.row}>
-          <EditorialImage variant={imageVariant} style={styles.rowImage} />
+          <EditorialImage variant={imageVariant} uri={imageUri} style={styles.rowImage} />
           <View style={styles.rowText}>{textBlock}</View>
         </View>
       ) : layout !== 'image-right' && layout !== 'image-left' ? (

@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type ImageSourcePropType } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { EditorialImage } from './EditorialImage';
 import { colors } from '../../constants/theme';
@@ -6,8 +6,8 @@ import { colors } from '../../constants/theme';
 type BeforeAfterFrameProps = {
   leftLabel?: string;
   rightLabel?: string;
-  leftUri?: string;
-  rightUri?: string;
+  leftUri?: ImageSourcePropType | string;
+  rightUri?: ImageSourcePropType | string;
 };
 
 /** Two-image side-by-side comparison — e.g. "Today | Visualization". */

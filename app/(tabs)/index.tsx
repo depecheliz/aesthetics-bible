@@ -8,6 +8,7 @@ import { EditorialImage } from '../../components/media/EditorialImage';
 import { EditorialModule } from '../../components/home/EditorialModule';
 import { BestieTeaser } from '../../components/home/BestieTeaser';
 import { Monogram } from '../../components/brand/Monogram';
+import { campaignImages } from '../../assets/brand/campaign';
 import { useAppState } from '../../lib/state/AppStateContext';
 import { summarizeEntriesThisYear } from '../../src/domain/passport';
 import { colors, spacing } from '../../constants/theme';
@@ -22,6 +23,7 @@ function DiscoverModules() {
         subtitle="Understand treatments before making decisions."
         layout="image-right"
         imageVariant="skin-detail"
+        imageUri={campaignImages.skinDetail}
         onPress={() => router.push('/bible')}
       />
       <EditorialModule
@@ -31,6 +33,7 @@ function DiscoverModules() {
         subtitle="Explore aesthetic looks before making a decision."
         layout="image-top"
         imageVariant="portrait"
+        imageUri={campaignImages.previewHero}
         onPress={() => router.push('/preview')}
       />
       <EditorialModule
@@ -67,7 +70,7 @@ function NewUserHome() {
         See your possibilities.{'\n'}Discover your options.{'\n'}Plan your aesthetic journey.
       </ThemedText>
 
-      <EditorialImage variant="portrait" monogram style={styles.heroImage} />
+      <EditorialImage variant="portrait" uri={campaignImages.homeHero} monogram style={styles.heroImage} />
 
       <Button
         label="Build My Aesthetics Plan"

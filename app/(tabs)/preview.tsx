@@ -7,8 +7,13 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Rule } from '../../components/ui/Rule';
 import { EditorialImage } from '../../components/media/EditorialImage';
-import { BeforeAfterFrame } from '../../components/media/BeforeAfterFrame';
+import { campaignImages } from '../../assets/brand/campaign';
 import { colors, radius, spacing } from '../../constants/theme';
+
+// Native aspect ratio (width/height) of the pre-composed before/after
+// visualization asset — rendered at its own ratio so the baked-in
+// "TODAY / MY VISUALIZATION" labels and monogram are never cropped.
+const VISUALIZATION_ASPECT_RATIO = 853 / 1844;
 
 type Mode = 'preview' | 'glow';
 
@@ -95,7 +100,12 @@ export default function PreviewScreen() {
               See a possibility before making a decision.
             </ThemedText>
 
-            <EditorialImage variant="portrait" label="AI VISUALIZATION" style={styles.heroImage} />
+            <EditorialImage
+              variant="portrait"
+              uri={campaignImages.previewHero}
+              label="AI VISUALIZATION"
+              style={styles.heroImage}
+            />
 
             <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
               CHOOSE A LOOK
@@ -129,10 +139,13 @@ export default function PreviewScreen() {
             <Button label="Try Preview" icon="camera" variant="secondary" disabled style={styles.tryButton} />
 
             <Rule style={styles.rule} />
-            <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
-              TODAY | MY VISUALIZATION
-            </ThemedText>
-            <BeforeAfterFrame />
+            <EditorialImage
+              variant="portrait"
+              uri={campaignImages.previewVisualization}
+              aspectRatio={VISUALIZATION_ASPECT_RATIO}
+              noDefault
+              style={styles.visualizationImage}
+            />
 
             <ThemedText variant="caption" color={colors.textMuted} style={styles.disclaimer}>
               Preview visualizations are illustrative, not a predicted treatment outcome, diagnosis, or guarantee.
@@ -281,6 +294,10 @@ const styles = StyleSheet.create({
     width: '100%',
     opacity: 0.4,
     marginVertical: spacing.lg,
+  },
+  visualizationImage: {
+    alignSelf: 'center',
+    maxWidth: 320,
   },
   disclaimer: {
     marginTop: spacing.md,

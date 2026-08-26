@@ -5,8 +5,14 @@ import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
 import { Rule } from '../../components/ui/Rule';
+import { EditorialImage } from '../../components/media/EditorialImage';
+import { campaignImages } from '../../assets/brand/campaign';
 import { botoxBestieDisclaimer, botoxBestieEntries } from '../../src/domain/botoxBestie';
 import { colors, radius, spacing } from '../../constants/theme';
+
+// Native aspect ratio of the Botox Bestie portrait — kept modest in size
+// (not a full-bleed hero) since Bestie stays secondary to the master brand.
+const BESTIE_ASPECT_RATIO = 853 / 1844;
 
 export default function BotoxBestieScreen() {
   const [openId, setOpenId] = useState<string | null>(null);
@@ -16,12 +22,23 @@ export default function BotoxBestieScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader />
 
-        <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
-          BOTOX BESTIE
-        </ThemedText>
-        <ThemedText variant="displayMedium" style={styles.headline}>
-          The aesthetics questions you actually want to ask.
-        </ThemedText>
+        <View style={styles.headerRow}>
+          <View style={styles.headerText}>
+            <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
+              BOTOX BESTIE
+            </ThemedText>
+            <ThemedText variant="displayMedium" style={styles.headline}>
+              The aesthetics questions you actually want to ask.
+            </ThemedText>
+          </View>
+          <EditorialImage
+            variant="portrait"
+            uri={campaignImages.botoxBestie}
+            aspectRatio={BESTIE_ASPECT_RATIO}
+            noDefault
+            style={styles.headerImage}
+          />
+        </View>
         <Rule style={styles.headlineRule} />
 
         {botoxBestieEntries.map((entry) => {
@@ -70,8 +87,19 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: spacing.xxxl,
   },
-  eyebrow: {
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
     marginTop: spacing.md,
+  },
+  headerText: {
+    flex: 1,
+  },
+  headerImage: {
+    width: 88,
+  },
+  eyebrow: {
     marginBottom: spacing.sm,
   },
   headline: {

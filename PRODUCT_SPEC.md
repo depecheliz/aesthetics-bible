@@ -5,6 +5,9 @@
 **Positioning:** *See your possibilities. Discover your options. Plan
 your aesthetic journey.*
 
+For what is actually built, mocked, or not yet connected right now, see
+`BUILD_STATUS.md`.
+
 ------------------------------------------------------------------------
 
 ## 1. Product Vision
@@ -49,6 +52,26 @@ prescribe medical treatment.
 -   High-fashion editorial imagery.
 -   No bubblegum pink, neon gradients, cartoon medical imagery, or
     generic med-spa aesthetic.
+
+### Visual system (as implemented)
+
+-   Palette: black `#0B0B0C`, espresso `#332C25`, warm ivory `#F6EFE6`,
+    champagne `#C9A97E`.
+-   Typography: Playfair Display (editorial display), Montserrat
+    (functional UI).
+-   "AB" monogram (`components/brand/Monogram.tsx`) used sparingly at
+    genuine brand moments --- Home, Paywall, shareable cards --- never as
+    decoration.
+-   Editorial layout favors thin champagne rules, numbering, and
+    generous whitespace over boxed cards; cards are reserved for objects
+    that need real containment (pricing tiers, locked-roadmap teaser,
+    share cards).
+-   Approved first-pass campaign photography lives in
+    `assets/brand/campaign/` and renders through the shared
+    `EditorialImage` / `BeforeAfterFrame` components. Marketing/editorial
+    slots may show an approved default photo; slots representing a
+    user's own content (progress photos, a saved provider) never default
+    to stock imagery.
 
 ### Working tagline
 
@@ -307,6 +330,14 @@ jawline; - body concerns.
 
 Each concern can link to multiple educational treatment categories.
 
+**Current V1 implementation:** 10 named treatments (Botox, Dysport,
+Fillers, Sculptra, RF Microneedling, Ultherapy, Sofwave, IPL/BBL, Laser
+Resurfacing, Microneedling) each linked to one of 12 generic
+recommendation categories, plus 7 curated browsing concerns. Search,
+category filters, and treatment detail pages (with hero image, Compare,
+Ask Bestie, and Find Near Me actions) are built. See
+`BUILD_STATUS.md`.
+
 ### Existing book frameworks to preserve
 
 -   Preserve / Restore / Rebuild.
@@ -462,6 +493,12 @@ Conversational interface grounded in curated Aesthetics Bible content.
 
 Do not answer by prescribing exact invasive treatment placement, dose,
 depth, or individualized injection instructions.
+
+**Current V1 implementation:** a mocked UI at `/botox-bestie` with 5
+curated static Q&A pairs and a visible boundary disclaimer --- no LLM, no
+grounded retrieval yet. Entry points exist from Home (teaser module),
+the Bible tab, and every Bible treatment detail page. See
+`BUILD_STATUS.md`.
 
 ------------------------------------------------------------------------
 
@@ -805,6 +842,23 @@ sessions to infer them.
 
   DIY                     Post-launch modular     Core approval/value
                           layer                   should not depend on it
+
+  Botox Bestie V1         Mocked static Q&A UI,   Gives the personality
+  visibility               no LLM                  brand presence without
+                                                    building the grounded
+                                                    assistant early
+
+  Brand mark               "AB" text monogram      No licensed vector
+                                                    logo yet; typographic
+                                                    lockup avoids
+                                                    reproducing any
+                                                    protected mark
+
+  Campaign photography      First-pass photo set   Replaces generic
+                            wired via              placeholder captions
+                            EditorialImage/         with real imagery
+                            BeforeAfterFrame        while staying
+                                                    swappable later
   -----------------------------------------------------------------------
 
 Update this table whenever a major product decision changes.

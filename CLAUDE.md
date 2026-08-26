@@ -19,6 +19,10 @@ tracking.
 The complete product definition lives in `PRODUCT_SPEC.md`. Treat it as
 the product source of truth.
 
+For what is actually built, mocked, or not yet connected right now, see
+`BUILD_STATUS.md` --- treat it as the current operational status, not a
+substitute for the product definition above.
+
 ------------------------------------------------------------------------
 
 ## Current Build Goal
@@ -97,6 +101,23 @@ mobile template.
 
 Reuse design tokens. Do not hardcode one-off visual values across
 screens.
+
+### Brand Mark
+
+An "AB" monogram (`components/brand/Monogram.tsx`) exists for sparing
+use at genuine brand moments --- Home, Paywall, and shareable cards. Do
+not scatter it across every screen or use it as decorative filler.
+
+### Campaign Imagery
+
+Approved editorial photography lives in `assets/brand/campaign/` and is
+surfaced only through the existing `EditorialImage` /
+`BeforeAfterFrame` components --- never through new one-off image
+components. Marketing/editorial slots (portrait, social, treatment
+variants) may fall back to an approved default photo; slots that
+represent a user's own content (progress photos, a specific saved
+provider) must never default to stock photography, since that would
+misrepresent it as real.
 
 ------------------------------------------------------------------------
 
@@ -327,6 +348,12 @@ Do not implement unless explicitly moved into V1:
 
 Architecture may anticipate these, but V1 UI/business logic should not
 include them.
+
+Botox Bestie currently exists only as a mocked, curated-content UI
+(static Q&A, no LLM, at `/botox-bestie`) --- this is the approved V1
+brand-visibility exception. The "full Ask the Bible/Botox Bestie
+assistant" (grounded, LLM-backed) referenced above remains NOT V1 until
+explicitly moved in.
 
 ------------------------------------------------------------------------
 

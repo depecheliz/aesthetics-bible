@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { Rule } from '../../components/ui/Rule';
 import { EditorialImage } from '../../components/media/EditorialImage';
 import { EntryCard } from '../../components/passport/EntryCard';
+import { campaignImages } from '../../assets/brand/campaign';
 import { useAppState } from '../../lib/state/AppStateContext';
 import { formatCurrency, sortEntriesByDateDesc, summarizeEntriesThisYear } from '../../src/domain/passport';
 import { colors, spacing } from '../../constants/theme';
@@ -15,7 +16,7 @@ function PassportEmptyState() {
   return (
     <Screen edges={['top']}>
       <ScrollView contentContainerStyle={styles.emptyContent} showsVerticalScrollIndicator={false}>
-        <EditorialImage variant="skin-detail" style={styles.emptyImage} />
+        <EditorialImage variant="skin-detail" uri={campaignImages.skinDetail} style={styles.emptyImage} />
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.emptyEyebrow}>
           PASSPORT
         </ThemedText>
