@@ -5,7 +5,7 @@ module.exports = [
   ...expoConfig,
   prettierConfig,
   {
-    ignores: ['dist/*', 'node_modules/*', '.expo/*', 'coverage/*', 'scripts/*', 'supabase/functions/**'],
+    ignores: ['dist/*', 'node_modules/*', '.expo/*', 'coverage/*', 'scripts/*', 'supabase/functions/**', 'benchmarks/**'],
   },
   {
     files: ['jest.setup.js'],

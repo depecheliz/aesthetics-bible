@@ -5,16 +5,26 @@ integration in progress. This is a status snapshot, not a product definition
 --- see `PRODUCT_SPEC.md` for the product and `CLAUDE.md` for the rules.
 Every claim below was verified against the current codebase.
 
-**Last known-good Git checkpoint:** `198b64c` --- *"feat: finalize V1
-brand assets docs and runtime stability"* (luxury UI, campaign imagery,
-recommendation engine, and the EditorialImage runtime-loop fix, all
-committed and validated).
+**Last known-good Git checkpoint:** `be2b3d0` --- *"feat: complete
+Supabase auth and core persistence"* (Supabase Phase 1 --- auth, database
+persistence for the quiz/Plan/Passport, RLS, account-deletion foundation
+--- all committed and validated).
 
-> ⚠️ The working tree currently has **uncommitted changes** on top of that
-> checkpoint: Supabase Phase 1 (auth, database persistence for the quiz/
-> Plan/Passport, RLS, account-deletion foundation --- see below). This work
-> is complete and validated but intentionally not committed yet, pending
-> your review.
+> ⚠️ **Supabase Phase 1 is implemented and validated; the live project is
+> temporarily paused during pre-launch development** to preserve this
+> account's available free-project slots while native/store-readiness
+> work continues. This is intentional infrastructure management, not an
+> outage or a defect. All migrations, repositories, auth architecture,
+> RLS policy definitions, and the `delete-account` Edge Function source
+> are preserved in Git (`supabase/migrations/`, `supabase/functions/`,
+> `lib/services/`) --- nothing needs to be rebuilt when the project is
+> reactivated. Do not attempt to "repair" the paused project, replace
+> Supabase, remove the integration, or alter migrations in response to
+> failed live auth/database calls while it's paused --- that is expected.
+> Run backend health/auth/persistence checks again before any production
+> testing, once reactivated. See `STORE_READINESS.md` for the current
+> native/store-readiness audit, which was completed entirely without a
+> live backend.
 
 ---
 
@@ -133,8 +143,42 @@ disabled/alert action --- not a real service call.
 
 ---
 
-## Supabase --- live configuration (this phase)
+## AI Image-Provider Benchmark Tooling (exploratory --- not production)
 
+`benchmarks/image-providers/` is a standalone harness for choosing which
+AI image-edit provider Preview/Glow will eventually use --- **not** a
+production integration. It is deliberately isolated: no application
+code, screen, Supabase table, Edge Function, or service interface
+depends on it or is affected by it.
+
+- Compares three candidates on identity preservation, prompt adherence,
+  realism, consistency, and effective cost per accepted result: Nano
+  Banana 2 (`google/nano-banana-2`), FLUX.1 Kontext [pro]
+  (`black-forest-labs/flux-kontext-pro`), and InstantID
+  (`grandlineai/instant-id-photorealistic`), all via Replicate.
+- Tracked in git: `README.md`, `.env.example`, `providers.js`,
+  `transformations.js`, `replicateClient.js`, `run-benchmark.js`,
+  `generate-scoresheet.js`, `generate-review-page.js`,
+  `summarize-results.js`, and `inputs/.gitkeep` / `outputs/.gitkeep`.
+- **Never tracked, by design:** `benchmarks/image-providers/.env` (holds
+  `REPLICATE_API_TOKEN`), everything under `inputs/` (source portraits),
+  everything under `outputs/` (generated images, manifest, scoresheet,
+  review page) --- all gitignored.
+- No paid benchmark call has been made yet; the harness has only been
+  validated in `--dry-run` mode (enumerates the planned 108 generations
+  and cost estimate, calls no API) and with a fabricated local manifest
+  to exercise the scoring/review/summarize scripts.
+- Whichever provider(s) this benchmark selects will inform --- not
+  predetermine --- the real Preview/Glow AI architecture, which remains
+  entirely unbuilt (see NOT CONNECTED above).
+
+---
+
+## Supabase --- configuration (implemented; project currently paused)
+
+- **Status: PAUSED (intentional).** Reactivate before any live
+  auth/database testing, RevenueCat entitlement work, or account-deletion
+  re-validation.
 - **Project:** "The Aesthetics Bible" (`ejilueesrzutafsbsqia`, us-east-1)
   --- a dedicated project, separate from this account's other Supabase
   projects.
@@ -162,11 +206,48 @@ disabled/alert action --- not a real service call.
 
 ---
 
+## Native / Store Readiness (this phase)
+
+Audit + configuration only --- no product features added, nothing
+submitted or built. Full detail in `STORE_READINESS.md`.
+
+- **Identifiers:** `com.aestheticsbible.app` already consistent for iOS
+  and Android; unchanged. URL scheme `aestheticsbible` already present;
+  unchanged.
+- **Development build:** `expo-dev-client` installed; `eas.json` added
+  (development/preview/production profiles). No build has been run and
+  no EAS project is linked yet (`eas login` + `eas build:configure`,
+  requires your Expo account).
+- **Icon/splash:** replaced on every platform (iOS icon, Android adaptive
+  icon + monochrome, splash, web favicon) with real Aesthetics Bible
+  brand art --- black background, champagne "AB" monogram, generated from
+  the same tokens the in-app UI uses. No generic Expo art remains. See
+  `STORE_READINESS.md` → Icon & Splash and `assets/brand/native/README.md`.
+- **Native permissions:** none currently declared (correct --- no
+  camera/photo/location package is installed yet, since Preview/Glow/
+  Passport photos/Near Me are all still mocked). Future permission
+  strategy documented in `STORE_READINESS.md`.
+- **Supabase native-auth audit:** confirmed cross-platform-safe by static
+  review (AsyncStorage-backed sessions, no `localStorage` calls anywhere,
+  email-confirmation and account-deletion flows are platform-agnostic).
+  No code changes were required.
+- **Privacy/data-collection audit:** documented in `STORE_READINESS.md`,
+  clearly separating what's collected today (account/email, quiz
+  answers, Plan, Passport entries --- only when signed in) from what's
+  planned but not implemented (photos, AI images, purchases, location,
+  analytics).
+- **Product-boundary copy audit:** no concerning language found; no
+  copy changed.
+
+---
+
 ## NEXT BUILD (in this order)
 
 1. **RevenueCat** --- real entitlement checks behind `lib/services/billing.ts`;
    gate Premium content server-verifiably, not just visually; wire
-   Restore Purchases.
+   Restore Purchases. Requires Supabase reactivated for entitlement
+   testing; App Store Connect/Play Console product setup can start
+   while it's still paused (see `STORE_READINESS.md`).
 2. **Google Places** --- replace Near Me's static array with a real
    `ProviderSearchService` implementation; add location permission
    handling.

@@ -1,4 +1,4 @@
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button';
 import { EditorialImage } from '../../components/media/EditorialImage';
 import { useAppState } from '../../lib/state/AppStateContext';
 import type { ProviderResult } from '../../lib/services/places';
+import { showAlert } from '../../lib/utils/crossPlatformAlert';
 import { colors, spacing } from '../../constants/theme';
 
 // Static sample data standing in for a future Google Places integration.
@@ -76,7 +77,7 @@ function ProviderRow({ provider }: { provider: ProviderResult }) {
             variant="secondary"
             fullWidth={false}
             style={styles.actionButton}
-            onPress={() => Alert.alert(provider.name, 'A full provider profile will be available in a future update.')}
+            onPress={() => showAlert(provider.name, 'A full provider profile will be available in a future update.')}
           />
           <Button
             label={saved ? 'Saved' : 'Save'}
@@ -91,7 +92,7 @@ function ProviderRow({ provider }: { provider: ProviderResult }) {
             variant="secondary"
             fullWidth={false}
             style={styles.actionButton}
-            onPress={() => Alert.alert('Directions', 'Directions will open in your maps app in a future update.')}
+            onPress={() => showAlert('Directions', 'Directions will open in your maps app in a future update.')}
           />
         </View>
       </View>

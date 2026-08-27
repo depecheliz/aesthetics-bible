@@ -49,3 +49,12 @@ coverage/
 # editor
 .vscode/*
 !.vscode/extensions.json
+
+# Image-provider benchmark — private source portraits, generated outputs,
+# and the local Replicate token must never be committed.
+benchmarks/image-providers/.env
+benchmarks/image-providers/.env.local
+benchmarks/image-providers/inputs/*
+!benchmarks/image-providers/inputs/.gitkeep
+benchmarks/image-providers/outputs/*
+!benchmarks/image-providers/outputs/.gitkeep
