@@ -15,7 +15,7 @@ import {
   Montserrat_600SemiBold,
 } from '@expo-google-fonts/montserrat';
 import { colors } from '../constants/theme';
-import { AppStateProvider } from '../lib/state/AppStateContext';
+import { AppProviders } from '../lib/state/AppProviders';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -45,10 +45,10 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <AppStateProvider>
+      <AppProviders>
         <StatusBar style="light" />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
-      </AppStateProvider>
+      </AppProviders>
     </SafeAreaProvider>
   );
 }

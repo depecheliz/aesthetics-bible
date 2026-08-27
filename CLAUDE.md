@@ -232,6 +232,25 @@ budget; - saved looks; - AI generation records.
 
 Do not trust client-supplied user IDs for authorization.
 
+### Persistence architecture (implemented, Phase 1)
+
+Screens talk only to `AppStateContext` (`lib/state/AppStateContext.tsx`).
+It optionally accepts a `persistence` adapter (`lib/services/persistenceAdapter.ts`,
+composed from one repository per table under `lib/services/`); when absent
+the app is local-only and behaves exactly as it did before Supabase
+existed. Do not call Supabase directly from a screen or component ---
+add to or extend a repository instead. Auth flows through the
+`AuthProvider` interface (`lib/services/auth.ts`) via `AuthContext`
+(`lib/state/AuthContext.tsx`), not through Supabase calls in UI code.
+
+Bible browsing and the quiz must remain usable without signing in;
+gate persistence at the point a user tries to save (see
+`lib/state/useRequireAuth.ts`), not at app launch.
+
+Alert.alert is a no-op on web (react-native-web) --- use
+`lib/utils/crossPlatformAlert.ts`'s `showAlert` for any prompt that must
+also work in a browser.
+
 ------------------------------------------------------------------------
 
 ## Photos

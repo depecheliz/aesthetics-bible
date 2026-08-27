@@ -8,6 +8,7 @@ import { ThemedText } from '../../components/typography/ThemedText';
 import { Button } from '../../components/ui/Button';
 import { FormField } from '../../components/ui/FormField';
 import { useAppState } from '../../lib/state/AppStateContext';
+import { showAlert } from '../../lib/utils/crossPlatformAlert';
 import type { SatisfactionRating } from '../../src/domain/passport';
 import { colors, radius, spacing } from '../../constants/theme';
 
@@ -28,24 +29,31 @@ export default function AddPassportEntryScreen() {
   const [notes, setNotes] = useState('');
   const [satisfaction, setSatisfaction] = useState<SatisfactionRating>(4);
   const [wouldDoAgain, setWouldDoAgain] = useState<boolean | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const canSave = treatment.trim().length > 0;
+  const canSave = treatment.trim().length > 0 && !isSaving;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!canSave) return;
-    addPassportEntry({
-      treatment: treatment.trim(),
-      date,
-      provider: provider.trim(),
-      cost: Number.parseFloat(cost) || 0,
-      product: product.trim(),
-      amountUnits: amountUnits.trim(),
-      area: area.trim(),
-      notes: notes.trim(),
-      satisfaction,
-      wouldDoAgain: wouldDoAgain ?? true,
-    });
-    router.back();
+    setIsSaving(true);
+    try {
+      await addPassportEntry({
+        treatment: treatment.trim(),
+        date,
+        provider: provider.trim(),
+        cost: Number.parseFloat(cost) || 0,
+        product: product.trim(),
+        amountUnits: amountUnits.trim(),
+        area: area.trim(),
+        notes: notes.trim(),
+        satisfaction,
+        wouldDoAgain: wouldDoAgain ?? true,
+      });
+      router.back();
+    } catch {
+      setIsSaving(false);
+      showAlert('Save Failed', 'This treatment could not be saved. Please check your connection and try again.');
+    }
   };
 
   return (
@@ -120,7 +128,13 @@ export default function AddPassportEntryScreen() {
             </Pressable>
           </View>
 
-          <Button label="Save to My Passport" onPress={handleSave} disabled={!canSave} style={styles.saveButton} />
+          <Button
+            label="Save to My Passport"
+            onPress={handleSave}
+            disabled={!canSave}
+            loading={isSaving}
+            style={styles.saveButton}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>

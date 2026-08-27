@@ -859,6 +859,11 @@ sessions to infer them.
                             EditorialImage/         with real imagery
                             BeforeAfterFrame        while staying
                                                     swappable later
+
+  Backend project           Dedicated Supabase     Keep this app's data
+                            project per product     isolated from other
+                            ("The Aesthetics        products on the same
+                            Bible")                 account
   -----------------------------------------------------------------------
 
 Update this table whenever a major product decision changes.

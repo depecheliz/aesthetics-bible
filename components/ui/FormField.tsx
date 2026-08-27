@@ -9,9 +9,20 @@ type FormFieldProps = {
   placeholder?: string;
   keyboardType?: KeyboardTypeOptions;
   multiline?: boolean;
+  secureTextEntry?: boolean;
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
 };
 
-export function FormField({ label, value, onChangeText, placeholder, keyboardType, multiline }: FormFieldProps) {
+export function FormField({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  keyboardType,
+  multiline,
+  secureTextEntry,
+  autoCapitalize,
+}: FormFieldProps) {
   return (
     <View style={styles.wrap}>
       <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.label}>
@@ -24,6 +35,8 @@ export function FormField({ label, value, onChangeText, placeholder, keyboardTyp
         placeholderTextColor={colors.textMuted}
         keyboardType={keyboardType}
         multiline={multiline}
+        secureTextEntry={secureTextEntry}
+        autoCapitalize={autoCapitalize}
         style={[styles.input, multiline && styles.inputMultiline]}
       />
     </View>

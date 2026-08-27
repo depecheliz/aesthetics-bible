@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { Button } from '../ui/Button';
 import { useAppState } from '../../lib/state/AppStateContext';
+import { useRequireAuth } from '../../lib/state/useRequireAuth';
 import type { TreatmentCategoryId } from '../../src/domain/recommendation';
 import { spacing } from '../../constants/theme';
 
@@ -24,6 +25,7 @@ type TreatmentActionsGridProps = {
  */
 export function TreatmentActionsGrid({ categoryId, mode = 'result', compareWithCategoryId }: TreatmentActionsGridProps) {
   const { savePlanItem, isPlanItemSaved } = useAppState();
+  const requireAuth = useRequireAuth();
   const saved = isPlanItemSaved(categoryId);
 
   const learnButton = (
@@ -70,7 +72,7 @@ export function TreatmentActionsGrid({ categoryId, mode = 'result', compareWithC
       variant={saved ? 'ghost' : 'secondary'}
       fullWidth={false}
       style={styles.button}
-      onPress={() => savePlanItem(categoryId)}
+      onPress={() => (saved ? undefined : requireAuth(() => savePlanItem(categoryId)))}
     />
   );
 

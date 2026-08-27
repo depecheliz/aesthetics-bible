@@ -7,12 +7,14 @@ import { Button } from '../../components/ui/Button';
 import { Rule } from '../../components/ui/Rule';
 import { EditorialImage } from '../../components/media/EditorialImage';
 import { EntryCard } from '../../components/passport/EntryCard';
+import { AccountSection } from '../../components/passport/AccountSection';
 import { campaignImages } from '../../assets/brand/campaign';
 import { useAppState } from '../../lib/state/AppStateContext';
+import { useRequireAuth } from '../../lib/state/useRequireAuth';
 import { formatCurrency, sortEntriesByDateDesc, summarizeEntriesThisYear } from '../../src/domain/passport';
 import { colors, spacing } from '../../constants/theme';
 
-function PassportEmptyState() {
+function PassportEmptyState({ onAddTreatment }: { onAddTreatment: () => void }) {
   return (
     <Screen edges={['top']}>
       <ScrollView contentContainerStyle={styles.emptyContent} showsVerticalScrollIndicator={false}>
@@ -26,7 +28,8 @@ function PassportEmptyState() {
         <ThemedText variant="bodyLarge" color={colors.textSecondary} style={styles.emptyBody}>
           Track every treatment, provider, and result — privately, in one timeline you control.
         </ThemedText>
-        <Button label="Log My First Treatment" icon="plus" onPress={() => router.push('/passport/add')} />
+        <Button label="Log My First Treatment" icon="plus" onPress={onAddTreatment} />
+        <AccountSection />
       </ScrollView>
     </Screen>
   );
@@ -34,9 +37,11 @@ function PassportEmptyState() {
 
 export default function PassportScreen() {
   const { passportEntries } = useAppState();
+  const requireAuth = useRequireAuth();
+  const handleAddTreatment = () => requireAuth(() => router.push('/passport/add'));
 
   if (passportEntries.length === 0) {
-    return <PassportEmptyState />;
+    return <PassportEmptyState onAddTreatment={handleAddTreatment} />;
   }
 
   const { spendThisYear, treatmentsThisYear, mostRecent } = summarizeEntriesThisYear(passportEntries);
@@ -87,7 +92,7 @@ export default function PassportScreen() {
             variant="secondary"
             fullWidth={false}
             style={styles.quickActionButton}
-            onPress={() => router.push('/passport/add')}
+            onPress={handleAddTreatment}
           />
         </View>
 
@@ -121,6 +126,8 @@ export default function PassportScreen() {
             Coming soon: your Aesthetics Wrapped — a shareable look back at your year.
           </ThemedText>
         </View>
+
+        <AccountSection />
       </ScrollView>
     </Screen>
   );

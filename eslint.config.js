@@ -5,6 +5,12 @@ module.exports = [
   ...expoConfig,
   prettierConfig,
   {
-    ignores: ['dist/*', 'node_modules/*', '.expo/*', 'coverage/*', 'scripts/*'],
+    ignores: ['dist/*', 'node_modules/*', '.expo/*', 'coverage/*', 'scripts/*', 'supabase/functions/**'],
+  },
+  {
+    files: ['jest.setup.js'],
+    languageOptions: {
+      globals: { jest: 'readonly', require: 'readonly' },
+    },
   },
 ];

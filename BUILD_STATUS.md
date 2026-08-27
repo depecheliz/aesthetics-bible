@@ -1,105 +1,88 @@
 # BUILD_STATUS.md --- THE AESTHETICS BIBLE
 
-**Purpose:** a concise, accurate operational handoff before backend
-integration begins. This is a status snapshot, not a product definition
+**Purpose:** a concise, accurate operational handoff for backend
+integration in progress. This is a status snapshot, not a product definition
 --- see `PRODUCT_SPEC.md` for the product and `CLAUDE.md` for the rules.
 Every claim below was verified against the current codebase.
 
-**Last known-good Git checkpoint:** `b00695c` --- *"feat: complete
-branded luxury UI and image architecture"*
+**Last known-good Git checkpoint:** `198b64c` --- *"feat: finalize V1
+brand assets docs and runtime stability"* (luxury UI, campaign imagery,
+recommendation engine, and the EditorialImage runtime-loop fix, all
+committed and validated).
 
-> ⚠️ The working tree currently has **uncommitted changes** on top of
-> that checkpoint: the campaign image integration (`assets/brand/campaign/`,
-> `EditorialImage` local-asset support, per-variant default photos, the
-> pre-composed Preview before/after image, and wiring across
-> Home/Preview/Paywall/Botox Bestie/Passport). This work is complete and
-> validated but intentionally not committed yet, pending your visual
-> review. Commit it before starting backend work so the checkpoint
-> reflects what's actually in the app.
+> ⚠️ The working tree currently has **uncommitted changes** on top of that
+> checkpoint: Supabase Phase 1 (auth, database persistence for the quiz/
+> Plan/Passport, RLS, account-deletion foundation --- see below). This work
+> is complete and validated but intentionally not committed yet, pending
+> your review.
 
 ---
 
 ## COMPLETE
 
-Built, wired to local/mock state, and covered by passing tests.
+Built, wired to local/mock state or live Supabase, and covered by passing
+tests.
 
 - **Navigation:** 5 tabs (Home, Plan, Preview, Bible, Passport) via Expo
   Router; Near Me is a contextual (non-tab) route reached from Bible,
   Result, and Plan.
 - **Aesthetics Profile quiz:** 6 questions (concern, area, intensity,
   downtime, comfort, budget) at `app/quiz/index.tsx`, one question per
-  screen, editorial progress numbering.
+  screen, editorial progress numbering. Completable without signing in.
 - **Recommendation engine:** deterministic, versioned (`RULES_VERSION =
   'v1'`) in `src/domain/recommendation.ts` --- 12 treatment categories,
   10 concerns, a 4-step comfort/downtime fallback waterfall, budget-fit
-  note. No LLM, no photo analysis. Covered by `recommendation.test.ts`.
-- **Result screen:** hero image, "why this matched you" compact summary,
-  full free top match (name, best-suited-for, downtime, cost, longevity,
-  budget note), Learn/Preview/Find Near Me/Save actions, a locked
-  "Complete Aesthetics Roadmap" teaser, and a "My Aesthetics Profile"
-  share-card concept.
-- **Plan tab:** empty state (quiz CTA) and completed state (top match,
-  saved items, alternates, same locked-roadmap teaser) driven by the same
-  recommendation result --- no second recommendation engine.
-- **The Bible:** `src/domain/bible.ts` --- 10 named treatments (Botox,
-  Dysport, Fillers, Sculptra, RF Microneedling, Ultherapy, Sofwave,
-  IPL/BBL, Laser Resurfacing, Microneedling) mapped to the 12 categories,
-  7 browsing concerns, search, category filters, a numbered "Treatment
-  Index," a "Most Explored" teaser, and one curated Compare link. Covered
-  by `bible.test.ts` and `bible.test.tsx`.
-- **Bible treatment detail pages:** hero image, overview, aliases, thin
-  editorial info rows, provider questions, and Compare / Ask Bestie /
-  Find Near Me actions. Compare pairing is resolved automatically via
-  `findComparableCategoryId` (reuses recommendation data; no hardcoded
-  pair list).
-- **Compare screen:** side-by-side category comparison at `/compare`.
-- **Botox Bestie (mocked):** `/botox-bestie` --- 5 curated Q&A pairs from
-  `src/domain/botoxBestie.ts`, accordion UI, visible boundary disclaimer.
-  Entry points from Home (teaser module, placed above the Discover
-  modules), the Bible tab, and every Bible treatment detail page. No LLM.
+  note. No LLM, no photo analysis. Unchanged by the Supabase work --- still
+  runs entirely locally; only its inputs/outputs are now optionally
+  persisted. Covered by `recommendation.test.ts`.
+- **Result screen, Plan tab, The Bible, Bible detail pages, Compare,
+  Botox Bestie (mocked), Progress Photos, Near Me (mocked), Preview,
+  Glow, Mock Paywall, Brand system, Campaign image architecture:**
+  unchanged from the prior checkpoint --- see git history for detail if
+  needed. None of this was touched by the Supabase Phase 1 work.
 - **Aesthetics Passport:** empty state, populated state (hero spend
   figure, treatments-this-year, most-recent), editorial timeline,
   treatment detail page, and an Add Treatment form (9 fields, star
-  rating, would-do-again toggle, keyboard-avoiding). Backed by local
-  state seeded with 2 sample entries.
-- **Progress Photos:** `/passport/photos` --- Baseline / 2 Weeks / 1
-  Month / 3 Months mock stages, a "Create Progress Story" concept
-  (unlocks after 2+ photos, itself still mocked), explicitly separated
-  from Preview/Glow.
-- **Near Me (mocked):** 3 static sample providers shaped exactly like the
-  future `ProviderResult` type, with View/Save/Directions actions (Save
-  persists to session state; View/Directions show a "coming soon" alert).
-- **Preview:** hero image, 6 visual goal chips, a 3-step Subtle↔Enhanced
-  control, and a pre-composed before/after visualization image. Clearly
-  labeled "AI Visualization" throughout. "Try Preview" is disabled (no
-  live generation).
-- **Glow:** distinct mode within the same Preview tab (`?mode=glow`
-  deep-link supported) --- 8 preset tiles, a "My Natural Look" concept
-  card, export-destination chips. "Try Glow" / "Apply My Look" disabled.
-- **Mock Paywall:** `$99/year` (hero, "$8.25/month" framing) and
-  "$14.99/month" secondary, matching `CLAUDE.md`'s launch test exactly.
-  6 Premium modules listed (Plan/Preview/Glow/Passport/Bible/Botox
-  Bestie). Pressing a plan shows a "Coming Soon" alert --- no purchase
-  processed, no RevenueCat.
-- **Brand system:** black/espresso/ivory/champagne palette, Playfair
-  Display + Montserrat, thin-rule editorial layout, "AB" monogram
-  (`components/brand/Monogram.tsx`) used at Home, Paywall, and share
-  cards only.
-- **Campaign image architecture:** `assets/brand/campaign/` (8 optimized
-  JPEGs, 52--116KB each, resized from 1.6--2.5MB originals via
-  `scripts/optimize-campaign-images.js`), surfaced only through
-  `EditorialImage` (per-variant default photo, local-asset support,
-  aspect-ratio override) and `BeforeAfterFrame` --- no duplicate image
-  components. *(Uncommitted --- see banner above.)*
-- **Domain-only local state:** `AppStateContext` (React Context,
-  session-only, no persistence) holds quiz answers, the computed
-  result, saved plan items, saved provider ids, and Passport entries.
-- **Tests:** 10 suites / 54 tests passing (`jest-expo`) --- domain logic,
+  rating, would-do-again toggle, keyboard-avoiding). **Signed out:**
+  session-only local state seeded with 2 sample entries, exactly as
+  before. **Signed in:** entries load from and save to Supabase (see
+  below); no fake samples for a real account.
+- **Authentication (NEW):** email + password sign-up/sign-in/sign-out at
+  `app/auth/sign-in.tsx` / `sign-up.tsx`, session restoration on launch
+  with a loading state, architected so Apple/Google sign-in can be added
+  later without rewriting (`AuthProvider` interface in
+  `lib/services/auth.ts`, Supabase implementation in
+  `lib/services/supabaseAuth.ts`). A minimal account section (email,
+  Sign Out, Delete Account) lives on the Passport tab --- the app has no
+  settings screen/6th tab, so this is its natural home.
+- **Database persistence (NEW):** `aesthetics_profile_answers`,
+  `aesthetics_plans`, `saved_plan_items`, and `passport_entries` in
+  Supabase, RLS-scoped per user, via a repository layer
+  (`lib/services/aestheticsProfileRepository.ts`, `planRepository.ts`,
+  `passportRepository.ts`) composed behind `lib/services/persistenceAdapter.ts`.
+  `AppStateContext` gained an optional `persistence` prop --- when absent
+  (signed out) it behaves exactly as the original local-only build; when
+  present (signed in) it hydrates from Supabase on sign-in and writes
+  through on save. Screens are unaware of Supabase; they only call
+  `useAppState()` as before.
+- **Auth gating (NEW):** Bible browsing and the quiz stay open with no
+  sign-in wall. Attempting to Save a Plan item or add a Passport entry
+  while signed out prompts sign-in (`lib/state/useRequireAuth.ts`)
+  instead of silently no-op'ing.
+- **Account-deletion foundation (NEW):** a `delete-account` Supabase Edge
+  Function (service-role key never leaves that server-side runtime)
+  deletes the calling user's own `auth.users` row; every user-owned table
+  cascades via `on delete cascade`. Verified end-to-end (see Validation).
+- **Domain-only local state:** `AppStateContext` (React Context) --- see
+  above; still the single place screens read/write product state.
+- **Tests:** 17 suites / 79 tests passing (`jest-expo`) --- domain logic,
   quiz flow, Bible search/filter, Plan/Home state-awareness, Passport
-  entry creation, and a render-smoke pass over every screen without a
-  dedicated behavioral test.
+  entry creation, auth context, persistence hydration/save/error
+  behavior, the auth-gate hook, and repository-layer unit tests (mocked
+  Supabase client) covering mapping, upsert idempotency, and RLS-style
+  error propagation.
 - **Validation, last run this session:** `tsc --noEmit` ✅ ·
-  `eslint .` ✅ (0 errors/warnings) · `jest` ✅ 54/54 · `expo-doctor` ✅
+  `eslint .` ✅ (0 errors/warnings) · `jest` ✅ 79/79 · `expo-doctor` ✅
   21/21 · `expo export --platform web` ✅.
 
 ---
@@ -109,11 +92,6 @@ Built, wired to local/mock state, and covered by passing tests.
 Present in the UI, but backed by static data, session state, or a
 disabled/alert action --- not a real service call.
 
-- **Authentication:** none. No login/signup screen exists; there is no
-  concept of a logged-in user anywhere in the app.
-- **Persistence:** none beyond in-memory React state. Closing the app
-  loses everything (quiz answers, saved items, Passport entries added
-  during the session).
 - **Preview / Glow generation:** no image is ever generated. The hero
   and preset images are static campaign photography; "Try Preview,"
   "Try Glow," and "Apply My Look" are disabled buttons.
@@ -130,7 +108,7 @@ disabled/alert action --- not a real service call.
   is no "report this image" UI.
 - **Progress Photos / Passport photo thumbnails:** tapping "Add Photo"
   just flips a local boolean to simulate a photo existing --- no camera,
-  no photo library, no file is ever touched.
+  no photo library, no file is ever touched, no Supabase Storage.
 - **Provider/photo imagery in Near Me and Progress Photos:** deliberately
   left as icon-only placeholders (not stocked with campaign photography)
   because they represent a business's or a user's own content --- see
@@ -140,12 +118,6 @@ disabled/alert action --- not a real service call.
 
 ## NOT CONNECTED
 
-No code path in this repo talks to any of these. Confirmed by searching
-the codebase for live client usage --- only interface/type definitions
-exist in `lib/services/`.
-
-- **Supabase** --- no client initialized, no auth, no database, no
-  storage. `lib/services/auth.ts` and `storage.ts` are interfaces only.
 - **RevenueCat** --- no SDK installed, no entitlement checks anywhere.
   `lib/services/billing.ts` is an interface only.
 - **Google Places** --- no API key, no network call. `lib/services/places.ts`
@@ -155,30 +127,61 @@ exist in `lib/services/`.
   interfaces only.
 - **Any analytics provider** (Segment, Amplitude, PostHog, etc.).
 - **Any LLM** for Botox Bestie or elsewhere.
+- **Supabase Storage** --- no bucket exists; photo uploads are explicitly
+  out of scope for this phase (see PRODUCT_SPEC.md → Photos when that
+  phase starts).
+
+---
+
+## Supabase --- live configuration (this phase)
+
+- **Project:** "The Aesthetics Bible" (`ejilueesrzutafsbsqia`, us-east-1)
+  --- a dedicated project, separate from this account's other Supabase
+  projects.
+- **Auth:** email + password. **Email confirmation is ON** (Supabase's
+  project default) --- `signUpWithEmail` returns `needsEmailConfirmation`
+  and the sign-up screen shows a "check your email" message rather than
+  assuming an immediate session. No custom SMTP/email templates are
+  configured yet, so confirmation emails use Supabase's default sender
+  (fine for testing; revisit before real users depend on it).
+- **Migrations:** `supabase/migrations/` --- 7 files, applied via the
+  Supabase MCP tools and mirrored locally: `profiles`, the on-signup
+  trigger (execute privilege revoked from `anon`/`authenticated` after a
+  security-advisor finding), `aesthetics_profile_answers`,
+  `aesthetics_plans`, `saved_plan_items`, `passport_entries`.
+- **RLS:** enabled on all 5 tables; `security advisor` reports 0 findings.
+  Explicitly verified (not just assumed): a second account could not
+  read, update, or delete a first account's rows via direct REST calls
+  even when explicitly targeting that user's `user_id` --- see the
+  Validation section of the implementation report.
+- **Edge Functions:** `delete-account` (JWT-verified, uses the
+  service-role key only inside its own server-side runtime).
+- **Env vars:** `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+  in `.env.local` (gitignored); `.env.example` already documented these
+  placeholder names before this phase.
 
 ---
 
 ## NEXT BUILD (in this order)
 
-1. **Supabase** --- auth, RLS-scoped tables for quiz answers/plan/Passport/
-   saved items, replacing `AppStateContext`'s in-memory state with
-   persisted, per-user data. Wire `lib/services/auth.ts` and `storage.ts`.
-2. **RevenueCat** --- real entitlement checks behind `lib/services/billing.ts`;
+1. **RevenueCat** --- real entitlement checks behind `lib/services/billing.ts`;
    gate Premium content server-verifiably, not just visually; wire
    Restore Purchases.
-3. **Google Places** --- replace Near Me's static array with a real
+2. **Google Places** --- replace Near Me's static array with a real
    `ProviderSearchService` implementation; add location permission
    handling.
-4. **Preview/Glow AI** --- real server-side image generation behind
+3. **Preview/Glow AI** --- real server-side image generation behind
    `PreviewAIProvider`/`GlowAIProvider`; quotas, rate limits, cost
-   telemetry, and the report/flag flow per `CLAUDE.md` → AI Calls.
-5. **Grounded Botox Bestie** --- replace the static Q&A array with a
+   telemetry, and the report/flag flow per `CLAUDE.md` → AI Calls. Needs
+   Supabase Storage for private photo upload first.
+4. **Grounded Botox Bestie** --- replace the static Q&A array with a
    retrieval-grounded assistant over Bible content, keeping the same
    boundary (no dose/placement/diagnosis) and the same secondary
    positioning relative to the master brand.
-6. **Production QA** --- real-device testing (iOS + Android), security
-   audit per `CLAUDE.md` → Security Audit, account deletion, privacy/
-   terms/support screens, rate limiting, analytics provider.
+5. **Production QA** --- real-device testing (iOS + Android), security
+   audit per `CLAUDE.md` → Security Audit, privacy/terms/support screens,
+   rate limiting, analytics provider, and a decision on email-confirmation
+   UX/custom SMTP before real users sign up.
 
 ---
 
@@ -200,6 +203,8 @@ this build surfaced as real gaps:
   photo).
 - The `face-zone` `EditorialImage` variant (no asset assigned; still a
   bare icon placeholder).
+- Passport photo fields/Supabase Storage (see PRODUCT_SPEC.md → Photos).
+- Apple/Google social sign-in (architecture allows it; not implemented).
 
 ---
 
@@ -207,8 +212,9 @@ this build surfaced as real gaps:
 
 - The recommendation engine's determinism and its test suite
   (`recommendation.test.ts`) --- no photo analysis, no LLM, no
-  randomness.
-- The 5-tab navigation surface; Near Me stays contextual, not a 6th tab.
+  randomness, and it must keep running entirely client-side/local.
+- The 5-tab navigation surface; Near Me stays contextual, not a 6th tab;
+  Account/Sign Out lives inside the Passport tab, not a new tab.
 - Preview and Glow as separate interfaces/experiences --- never merge
   them into one ambiguous flow.
 - The black/ivory/champagne system and the monogram's sparing use
@@ -220,8 +226,15 @@ this build surfaced as real gaps:
 - Botox Bestie's secondary positioning and its boundary language (no
   dose/placement/diagnosis) once it becomes grounded.
 - The free top match never being hidden behind the paywall.
-- The current 54 passing tests and clean `tsc`/`eslint`/`expo-doctor`
-  baseline --- run all four after any change.
+- Bible browsing and the quiz staying usable without signing in; only
+  the Save/persist actions are auth-gated.
+- `AppStateContext`'s signed-out behavior staying local-only and
+  identical to the pre-Supabase build --- don't make `persistence`
+  required.
+- RLS on every user-owned table, and never trusting a client-supplied
+  `user_id` for authorization.
+- The current 79 passing tests and clean `tsc`/`eslint`/`expo-doctor`
+  baseline --- run all five after any change.
 
 ---
 
@@ -239,6 +252,8 @@ Verified in code and copy, not just in the spec:
   it never receives or processes an image.
 - Bible treatment detail pages ask general provider-consultation
   questions, never exact dose/placement instructions.
+- No Supabase service-role key is ever bundled into the client; it only
+  exists inside the `delete-account` Edge Function's own runtime.
 
 ---
 
@@ -247,7 +262,7 @@ Verified in code and copy, not just in the spec:
 ```
 npm run typecheck   # tsc --noEmit
 npm run lint        # eslint .
-npm test            # jest — expect 10 suites / 54 tests
+npm test            # jest — expect 17 suites / 79 tests
 npx expo-doctor      # expect 21/21
 npx expo export --platform web   # production bundle sanity check
 ```

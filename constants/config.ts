@@ -4,6 +4,9 @@
  * Values here are placeholders for the V1 workspace scaffold. Real values
  * (and server-verified enforcement) come later — per CLAUDE.md, quotas
  * must be server-verifiable and must never be enforced client-side only.
+ *
+ * Public runtime environment values (Supabase URL/key, etc.) live in
+ * lib/env.ts, not here.
  */
 
 export const featureFlags = {
