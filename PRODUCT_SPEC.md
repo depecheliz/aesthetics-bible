@@ -1,7 +1,8 @@
 # THE AESTHETICS BIBLE --- PRODUCT_SPEC.md
 
 **Status:** Product definition locked for phased build\
-**Product:** The Aesthetics Bible\
+**Product:** Aestella (consumer-facing app name); The Aesthetics Bible
+remains the descriptor/category positioning and content-library name\
 **Positioning:** *See your potential. Build your plan.*
 
 For what is actually built, mocked, or not yet connected right now, see
@@ -553,9 +554,10 @@ depend on approval of advanced DIY invasive-procedure instruction.
 
 ### Premium
 
-**Launch test:** \$14.99/month or \$99/year.
+**Launch test:** \$11.99/week or \$99/year --- no monthly plan.
 
-Annual should be the hero offer.
+Annual is preselected as the "Best Value" hero offer. Both plans grant
+the same Premium entitlement.
 
 Premium includes: - complete roadmap; - full Bible; - comparisons; -
 full Passport; - private photo history; - calendar; - budget; - Ask the
@@ -830,8 +832,10 @@ sessions to infer them.
   Core recommendation     Multiple-choice stated  Useful personalization
   input                   goals                   without photo diagnosis
 
-  Premium launch test     \$14.99/mo or \$99/yr   Supports recurring
-                                                  AI/storage costs
+  Premium launch test     \$11.99/wk or \$99/yr,  Supersedes the earlier
+                          no monthly plan          $14.99/mo figure;
+                                                    supports recurring
+                                                    AI/storage costs
 
   Lifetime plan           No                      Ongoing variable costs
 
@@ -865,6 +869,19 @@ sessions to infer them.
                             project per product     isolated from other
                             ("The Aesthetics        products on the same
                             Bible")                 account
+
+  Consumer app name         Aestella; The           Reconciliation pass
+                            Aesthetics Bible         confirmed Aestella as
+                            stays the descriptor/    the consumer-facing
+                            content-library name     product name; scope
+                                                      limited to docs +
+                                                      existing paywall/
+                                                      analyzing-screen
+                                                      copy for this pass
+                                                      --- no broader
+                                                      codebase rename,
+                                                      bundle-ID change, or
+                                                      asset/nav redesign
   -----------------------------------------------------------------------
 
 Update this table whenever a major product decision changes.

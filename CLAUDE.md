@@ -4,12 +4,14 @@ Read this file before changing the project.
 
 ## Product
 
-**The Aesthetics Bible** is a luxury consumer aesthetics app.
+**Aestella** is the consumer-facing product name; **The Aesthetics
+Bible** remains the descriptor/category positioning and the name of the
+underlying content library. Aestella is a luxury consumer aesthetics
+app.
 
 Positioning:
 
-> **See your possibilities. Discover your options. Plan your aesthetic
-> journey.**
+> **See your potential. Build your plan.**
 
 The app combines: - personalized aesthetics education; - structured
 content from The Facial Aesthetics Bible; - AI visualization; -
@@ -293,7 +295,9 @@ endpoint.
 
 ## Premium
 
-Working launch test: - **\$14.99/month** - **\$99/year** --- hero offer
+Working launch test: - **\$11.99/week** - **\$99/year** --- no monthly
+plan; annual is preselected as the "Best Value" hero offer; both plans
+grant the same Premium entitlement
 
 Use RevenueCat for native entitlements.
 
