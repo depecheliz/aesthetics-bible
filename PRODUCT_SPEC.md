@@ -75,8 +75,7 @@ prescribe medical treatment.
 
 ### Working tagline
 
-**See your possibilities. Discover your options. Plan your aesthetic
-journey.**
+**See your potential. Build your plan.**
 
 ### Named product features
 
@@ -314,13 +313,22 @@ records.
 
 ### Treatment record schema
 
-Each treatment can support: - title; - aliases; - category; -
-overview; - common goals/concerns; - areas; - how it is generally
-described/worked; - results context; - longevity; - downtime; - cost
-context; - limitations; - risks; - alternatives; - questions to ask a
-provider; - references; - related comparisons; - related provider-search
-query; - related Preview options; - premium/free flag; - content
-version/review date.
+**As actually implemented** in `src/domain/bible.ts`'s `BibleTreatment`
+type (this section previously described an aspirational future schema
+that did not match the code; corrected here per the repo content-
+integration pass): id; title; aliases; categoryId; overview;
+contentVersion; reviewDate; stage (preserve / restore / rebuild); primary
+layers (from the manuscript's 7-layer framework); what the treatment does
+NOT address; discomfort; repeat frequency; value summary; who should
+reconsider it. The last seven fields are sourced from the owned
+manuscript ("The Facial Aesthetics Bible") and were added in the
+manuscript content-integration pass — see the file-level comment in
+`bible.ts` for sourcing notes.
+
+Not yet in the schema: limitations/risks as a distinct field from "what
+it does not address"; a dedicated references field; related-comparisons
+or related-Preview-options links; a premium/free flag. These remain
+possible future additions, not implemented now.
 
 ### Concern record schema
 
@@ -330,13 +338,21 @@ jawline; - body concerns.
 
 Each concern can link to multiple educational treatment categories.
 
-**Current V1 implementation:** 10 named treatments (Botox, Dysport,
-Fillers, Sculptra, RF Microneedling, Ultherapy, Sofwave, IPL/BBL, Laser
-Resurfacing, Microneedling) each linked to one of 12 generic
-recommendation categories, plus 7 curated browsing concerns. Search,
-category filters, and treatment detail pages (with hero image, Compare,
-Ask Bestie, and Find Near Me actions) are built. See
-`BUILD_STATUS.md`.
+**Current V1 implementation:** 28 named treatments across 9 of the 12
+recommendation categories (tox, fillers, biostimulators, rf, ultrasound,
+lasers, microneedling, peels, threads, skincare — skin_boosters and
+at_home_devices remain unpopulated), plus 7 curated browsing concerns.
+Content is sourced from the owned manuscript. Regenerative medicine (PRP,
+PRF, exosomes, polynucleotides, stem-cell-derived products) and surgery
+(blepharoplasty, brow lift, facelift variants, neck lift) are covered at
+length in the manuscript but intentionally not represented: surgery has
+no corresponding category id in `recommendation.ts`, and regenerative
+medicine's best-fit category (skin_boosters) is not a precise match for
+blood-derived and DNA-fragment products. Search, category filters, and
+treatment detail pages (with hero image, Compare, Ask Bestie, and Find
+Near Me actions) are built. Compare now supports comparing two named
+treatments directly (e.g. Botox vs. Dysport), not only two generic
+categories. See `BUILD_STATUS.md`.
 
 ### Existing book frameworks to preserve
 

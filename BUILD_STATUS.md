@@ -144,10 +144,30 @@ tests.
   note. No LLM, no photo analysis. Unchanged by the Supabase work --- still
   runs entirely locally; only its inputs/outputs are now optionally
   persisted. Covered by `recommendation.test.ts`.
-- **Result screen, Plan tab, The Bible, Bible detail pages, Compare,
-  Botox Bestie (mocked), Progress Photos, Near Me (mocked), Preview,
-  Glow, Mock Paywall, Brand system, Campaign image architecture:**
-  unchanged from the prior checkpoint --- see git history for detail if
+- **Manuscript content integration (NEW):** The Bible grew from 10 to 28
+  named treatments in `src/domain/bible.ts`, sourced from the owned
+  manuscript ("The Facial Aesthetics Bible"). Every treatment now carries
+  seven manuscript-derived fields (`stage`, `primaryLayers`,
+  `whatItDoesNotAddress`, `discomfort`, `repeatFrequency`,
+  `valueSummary`, `whoShouldSkip`) alongside the original fields, all
+  rendered on `app/bible/[id].tsx`. Three previously-empty recommendation
+  categories (peels, threads, skincare) now have named content.
+  `recommendation.ts`, `quiz.ts`, and all matching/scoring logic were not
+  touched. Provider questions on the detail screen changed from one
+  hardcoded 3-question array shared by all 10 treatments to five
+  manuscript-sourced core questions (`bibleCoreProviderQuestions`) plus
+  treatment-specific questions where the manuscript supports them
+  (`bibleSpecificProviderQuestions`). **Compare (`app/compare/index.tsx`)
+  now also accepts two treatment ids (`?ta=&tb=`)** and shows
+  treatment-level rows (e.g. Botox vs. Dysport), falling back to the
+  original category-only behavior (`?a=&b=`) when only one named
+  treatment exists in a category. Covered by `bible.test.ts` and the new
+  `__tests__/app/compare/index.test.tsx`.
+- **Result screen, Plan tab, The Bible, Botox Bestie (mocked), Progress
+  Photos, Near Me (mocked), Preview, Glow, Mock Paywall, Brand system,
+  Campaign image architecture:** unchanged from the prior checkpoint,
+  aside from the Bible/Compare item directly above --- see git history for
+  detail if
   needed. None of this was touched by the Supabase Phase 1 work.
 - **Aesthetics Passport:** empty state, populated state (hero spend
   figure, treatments-this-year, most-recent), editorial timeline,
@@ -425,10 +445,21 @@ this build surfaced as real gaps:
 - Beauty Calendar, Beauty Budget (named in the spec; no code exists yet).
 - Aesthetics Wrapped (a one-line "coming soon" teaser exists in Passport;
   no feature).
-- The full "Preserve / Restore / Rebuild" framework, seven layers of
-  facial aging, face zones, and self-assessment content --- The Bible's
-  current 10 treatments/7 concerns don't yet implement these source-book
-  structures.
+- Face zones and the interactive self-assessment flowchart --- not yet
+  implemented as their own content/UI. (Preserve / Restore / Rebuild and
+  the 7 layers of facial aging are now implemented as `stage` and
+  `primaryLayers` fields on every Bible treatment, tagged from the
+  manuscript --- see the manuscript content-integration entry under
+  `## COMPLETE` below.)
+- Regenerative medicine (PRP, PRF, exosomes, polynucleotides, stem-cell-
+  derived products) and surgery (blepharoplasty, brow lift, facelift
+  variants, neck lift) --- covered at length in the manuscript but
+  intentionally left out of the Bible content pass: surgery has no
+  corresponding category id in `recommendation.ts`, and regenerative
+  medicine's best-fit category (skin_boosters) is not a precise match for
+  blood-derived and DNA-fragment products. Revisit only alongside a
+  deliberate `recommendation.ts` taxonomy change, not as a content-only
+  addition.
 - Shop/Affiliate architecture, Advanced/DIY module.
 - Multi-density (@2x/@3x) campaign image variants; additional
   preset-specific Glow photography (all 8 presets currently share one

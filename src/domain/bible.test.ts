@@ -1,9 +1,12 @@
 import {
   bibleCategoryFilters,
   bibleConcerns,
+  bibleCoreProviderQuestions,
+  bibleSpecificProviderQuestions,
   bibleTreatments,
   filterBibleTreatmentsByCategory,
   findComparableCategoryId,
+  findComparableTreatmentId,
   getBibleTreatmentById,
   searchBibleTreatments,
 } from './bible';
@@ -25,8 +28,8 @@ describe('searchBibleTreatments', () => {
 
   it('matches by parent category name', () => {
     const results = searchBibleTreatments('neuromodulator');
-    // "Neuromodulator" appears in aliases for both botox and dysport
-    expect(results.map((t) => t.id).sort()).toEqual(['botox', 'dysport']);
+    // "Neuromodulator" appears in aliases for all four tox-category brands
+    expect(results.map((t) => t.id).sort()).toEqual(['botox', 'daxxify', 'dysport', 'xeomin']);
   });
 
   it('returns no results for a non-matching query', () => {
@@ -41,7 +44,7 @@ describe('filterBibleTreatmentsByCategory', () => {
 
   it('filters to a single category', () => {
     const results = filterBibleTreatmentsByCategory('tox');
-    expect(results.map((t) => t.id).sort()).toEqual(['botox', 'dysport']);
+    expect(results.map((t) => t.id).sort()).toEqual(['botox', 'daxxify', 'dysport', 'xeomin']);
   });
 });
 
@@ -94,5 +97,58 @@ describe('findComparableCategoryId', () => {
     for (const categoryId of bibleCategoryFilters) {
       expect(findComparableCategoryId(categoryId)).toBeDefined();
     }
+  });
+});
+
+describe('manuscript content expansion', () => {
+  it('grew the library from 10 to 28 named treatments', () => {
+    expect(bibleTreatments).toHaveLength(28);
+  });
+
+  it('populated the three categories that previously had zero named treatments', () => {
+    expect(filterBibleTreatmentsByCategory('peels')).toHaveLength(1);
+    expect(filterBibleTreatmentsByCategory('threads')).toHaveLength(3);
+    expect(filterBibleTreatmentsByCategory('skincare')).toHaveLength(4);
+  });
+
+  it('gives every treatment a stage, primary layers, and the seven manuscript-derived fields', () => {
+    for (const treatment of bibleTreatments) {
+      expect(['preserve', 'restore', 'rebuild']).toContain(treatment.stage);
+      expect(treatment.primaryLayers.length).toBeGreaterThan(0);
+      expect(treatment.whatItDoesNotAddress.length).toBeGreaterThan(0);
+      expect(treatment.discomfort.length).toBeGreaterThan(0);
+      expect(treatment.repeatFrequency.length).toBeGreaterThan(0);
+      expect(treatment.valueSummary.length).toBeGreaterThan(0);
+      expect(treatment.whoShouldSkip.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('differentiates the four neuromodulator brands by repeat frequency, per the manuscript', () => {
+    const daxxify = bibleTreatments.find((t) => t.id === 'daxxify');
+    const botox = bibleTreatments.find((t) => t.id === 'botox');
+    expect(daxxify?.repeatFrequency).not.toBe(botox?.repeatFrequency);
+  });
+});
+
+describe('findComparableTreatmentId', () => {
+  it('pairs a treatment with another named treatment in the same category', () => {
+    expect(findComparableTreatmentId('botox')).toBe('dysport');
+    expect(['sculptra'].includes(findComparableTreatmentId('radiesse') ?? '')).toBe(true);
+  });
+
+  it('returns undefined for a treatment with no other named treatment in its category', () => {
+    expect(findComparableTreatmentId('fillers')).toBeUndefined();
+    expect(findComparableTreatmentId('microneedling')).toBeUndefined();
+  });
+});
+
+describe('provider questions', () => {
+  it('exposes the five manuscript core questions', () => {
+    expect(bibleCoreProviderQuestions).toHaveLength(5);
+  });
+
+  it('only adds treatment-specific questions where the manuscript supports them', () => {
+    expect(bibleSpecificProviderQuestions.botox?.length).toBeGreaterThan(0);
+    expect(bibleSpecificProviderQuestions.sofwave).toBeUndefined();
   });
 });

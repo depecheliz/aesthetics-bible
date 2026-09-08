@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
@@ -8,15 +8,18 @@ import { Button } from '../../components/ui/Button';
 import { InfoRow } from '../../components/ui/InfoRow';
 import { Rule } from '../../components/ui/Rule';
 import { EditorialImage } from '../../components/media/EditorialImage';
-import { findComparableCategoryId, getBibleTreatmentById } from '../../src/domain/bible';
+import {
+  bibleCoreProviderQuestions,
+  bibleSpecificProviderQuestions,
+  bibleStageLabels,
+  facialAgingLayerLabels,
+  findComparableCategoryId,
+  findComparableTreatmentId,
+  getBibleTreatmentById,
+  type BibleTreatmentId,
+} from '../../src/domain/bible';
 import { treatmentCategories } from '../../src/domain/recommendation';
 import { colors, spacing } from '../../constants/theme';
-
-const providerQuestions = [
-  'What results are realistic for my specific goals, and over what timeframe?',
-  'What downtime or aftercare should I plan for?',
-  'How many sessions are typically recommended, and how is pricing structured?',
-];
 
 export default function TreatmentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -34,7 +37,22 @@ export default function TreatmentDetailScreen() {
   }
 
   const category = treatmentCategories[treatment.categoryId];
-  const compareWithId = findComparableCategoryId(treatment.categoryId);
+
+  // Prefer comparing against another named treatment in the same category
+  // (e.g. Botox vs. Dysport) so Compare can show real treatment-level
+  // differences. Falls back to the category-level comparison when this
+  // is the only named treatment in its category.
+  const compareTreatmentId = findComparableTreatmentId(treatment.id as BibleTreatmentId);
+  const compareCategoryId = findComparableCategoryId(treatment.categoryId);
+  const compareHref = compareTreatmentId
+    ? `/compare?ta=${treatment.id}&tb=${compareTreatmentId}`
+    : compareCategoryId
+      ? `/compare?a=${category.id}&b=${compareCategoryId}`
+      : undefined;
+
+  const hasStageContext = treatment.primaryLayers.length > 0;
+  const specificQuestions = bibleSpecificProviderQuestions[treatment.id as BibleTreatmentId] ?? [];
+  const providerQuestions = [...bibleCoreProviderQuestions, ...specificQuestions];
 
   return (
     <Screen>
@@ -58,21 +76,50 @@ export default function TreatmentDetailScreen() {
           {treatment.overview}
         </ThemedText>
 
+        {hasStageContext && (
+          <View style={styles.badgeRow}>
+            <View style={styles.badge}>
+              <ThemedText variant="caption" color={colors.accent}>
+                {bibleStageLabels[treatment.stage].toUpperCase()} STAGE
+              </ThemedText>
+            </View>
+            {treatment.primaryLayers.map((layer) => (
+              <View key={layer} style={styles.badge}>
+                <ThemedText variant="caption" color={colors.textSecondary}>
+                  {facialAgingLayerLabels[layer]}
+                </ThemedText>
+              </View>
+            ))}
+          </View>
+        )}
+
         <Rule style={styles.rule} />
         <InfoRow label="BEST SUITED FOR" value={category.bestSuitedFor} />
         <InfoRow label="DOWNTIME" value={category.downtimeContext} />
         <InfoRow label="TYPICAL COST" value={category.costContext} />
         <InfoRow label="LONGEVITY" value={category.longevityContext} />
 
+        {treatment.whatItDoesNotAddress.length > 0 && (
+          <InfoRow label="WHAT THIS DOES NOT ADDRESS" value={treatment.whatItDoesNotAddress} />
+        )}
+        {treatment.discomfort.length > 0 && <InfoRow label="DISCOMFORT" value={treatment.discomfort} />}
+        {treatment.repeatFrequency.length > 0 && (
+          <InfoRow label="REPEAT FREQUENCY" value={treatment.repeatFrequency} />
+        )}
+        {treatment.valueSummary.length > 0 && <InfoRow label="VALUE CONTEXT" value={treatment.valueSummary} />}
+        {treatment.whoShouldSkip.length > 0 && (
+          <InfoRow label="WHO SHOULD RECONSIDER THIS" value={treatment.whoShouldSkip} />
+        )}
+
         <View style={styles.actionsRow}>
-          {compareWithId && (
+          {compareHref && (
             <Button
               label="Compare"
               icon="bar-chart-2"
               variant="secondary"
               fullWidth={false}
               style={styles.actionButton}
-              onPress={() => router.push(`/compare?a=${category.id}&b=${compareWithId}`)}
+              onPress={() => router.push(compareHref as Href)}
             />
           )}
           <Button
@@ -134,7 +181,20 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   overview: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  badge: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    borderRadius: 999,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
   },
   rule: {
     width: '100%',
