@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { Screen } from '../../components/layout/Screen';
@@ -10,6 +10,7 @@ import { OptionRow } from '../../components/quiz/OptionRow';
 import { quizQuestions, type QuizAnswers } from '../../src/domain/quiz';
 import { getRecommendation } from '../../src/domain/recommendation';
 import { useAppState } from '../../lib/state/AppStateContext';
+import { analytics } from '../../lib/services/analyticsClient';
 import { colors, spacing } from '../../constants/theme';
 
 function stepNumber(n: number): string {
@@ -19,6 +20,14 @@ function stepNumber(n: number): string {
 export default function QuizScreen() {
   const { quizAnswers, setAnswer, setResult } = useAppState();
   const [stepIndex, setStepIndex] = useState(0);
+  const hasTrackedStart = useRef(false);
+
+  useEffect(() => {
+    if (!hasTrackedStart.current) {
+      hasTrackedStart.current = true;
+      analytics.track('quiz_started');
+    }
+  }, []);
 
   const question = quizQuestions[stepIndex];
   const isLastStep = stepIndex === quizQuestions.length - 1;
@@ -41,7 +50,8 @@ export default function QuizScreen() {
     const answers = quizAnswers as QuizAnswers;
     const result = getRecommendation(answers);
     setResult(result);
-    router.push('/quiz/result');
+    analytics.track('quiz_completed');
+    router.push('/quiz/analyzing');
   };
 
   return (

@@ -8,7 +8,7 @@ import type { Entitlement } from '../../types';
 
 export interface BillingProvider {
   getEntitlement(): Promise<Entitlement>;
-  purchaseMonthly(): Promise<Entitlement>;
+  purchaseWeekly(): Promise<Entitlement>;
   purchaseAnnual(): Promise<Entitlement>;
   restorePurchases(): Promise<Entitlement>;
 }

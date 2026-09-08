@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { Screen } from '../../components/layout/Screen';
@@ -11,17 +11,44 @@ import { TreatmentActionsGrid } from '../../components/plan/TreatmentActionsGrid
 import { PremiumRoadmapCard } from '../../components/plan/PremiumRoadmapCard';
 import { ShareCard, ShareCardStatRow } from '../../components/media/ShareCard';
 import { useAppState } from '../../lib/state/AppStateContext';
+import { useEntitlement } from '../../lib/state/EntitlementContext';
+import { analytics } from '../../lib/services/analyticsClient';
 import { areaLabels, concernLabels, intensityLabels } from '../../src/domain/quiz';
 import { colors, spacing } from '../../constants/theme';
 
+// How long the free reveal stays uninterrupted before the paywall is
+// presented automatically. Long enough to read the top match; short enough
+// that the paywall isn't just a hidden button further down the screen.
+const AUTO_PAYWALL_DELAY_MS = 3500;
+
 export default function ResultScreen() {
   const { result } = useAppState();
+  const { isPremium } = useEntitlement();
+  const hasTrackedView = useRef(false);
 
   useEffect(() => {
     if (!result) {
       router.replace('/quiz');
     }
   }, [result]);
+
+  useEffect(() => {
+    if (!result || hasTrackedView.current) {
+      return;
+    }
+    hasTrackedView.current = true;
+    analytics.track('top_match_viewed');
+  }, [result]);
+
+  useEffect(() => {
+    if (!result || isPremium) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      router.push('/paywall');
+    }, AUTO_PAYWALL_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [result, isPremium]);
 
   if (!result) {
     return null;
@@ -47,7 +74,7 @@ export default function ResultScreen() {
           YOUR AESTHETICS PROFILE
         </ThemedText>
         <ThemedText variant="body" color={colors.textSecondary} style={styles.subEyebrow}>
-          Your #1 Area to Explore
+          Your #1 Priority
         </ThemedText>
         <ThemedText variant="displayHero" style={styles.categoryName}>
           {category.name}

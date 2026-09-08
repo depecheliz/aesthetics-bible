@@ -2,8 +2,7 @@
 
 **Status:** Product definition locked for phased build\
 **Product:** The Aesthetics Bible\
-**Positioning:** *See your possibilities. Discover your options. Plan
-your aesthetic journey.*
+**Positioning:** *See your potential. Build your plan.*
 
 For what is actually built, mocked, or not yet connected right now, see
 `BUILD_STATUS.md`.
@@ -751,8 +750,10 @@ UI.
 
 At minimum: - `onboarding_started` - `onboarding_completed` -
 `quiz_started` - `quiz_completed` - `top_match_viewed` -
-`full_roadmap_clicked` - `paywall_viewed` - `monthly_purchased` -
-`annual_purchased` - `purchase_restored` - `bible_search` -
+`full_roadmap_clicked` - `paywall_viewed` - `weekly_selected` -
+`annual_selected` - `purchase_started` - `weekly_purchased` -
+`annual_purchased` - `purchase_failed` - `restore_started` -
+`purchase_restored` - `restore_failed` - `bible_search` -
 `treatment_viewed` - `comparison_viewed` - `provider_search` -
 `provider_viewed` - `provider_saved` - `passport_entry_created` -
 `passport_photo_added` - `preview_started` - `preview_generated` -

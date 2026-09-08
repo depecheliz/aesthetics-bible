@@ -37,7 +37,7 @@ describe('Quiz completion flow', () => {
       await fireEvent.press(screen.getByRole('button', { name: isLast ? 'See My Top Match' : 'Continue' }));
     }
 
-    expect(mockPush).toHaveBeenCalledWith('/quiz/result');
+    expect(mockPush).toHaveBeenCalledWith('/quiz/analyzing');
   });
 
   it('does not allow continuing before an option is selected', async () => {

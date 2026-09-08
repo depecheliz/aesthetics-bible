@@ -36,6 +36,12 @@
           "resizeMode": "contain",
           "backgroundColor": "#0B0B0C"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The Aesthetics Bible needs access to your photos so you can choose one for AI Preview."
+        }
       ]
     ],
     "experiments": {

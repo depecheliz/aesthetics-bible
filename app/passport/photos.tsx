@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
-import { Button } from '../../components/ui/Button';
 import { Rule } from '../../components/ui/Rule';
 import { EditorialImage } from '../../components/media/EditorialImage';
 import { colors, spacing } from '../../constants/theme';
@@ -18,76 +16,45 @@ const stages: { id: StageId; label: string }[] = [
   { id: 'three_months', label: '3 Months' },
 ];
 
-function PhotoStageRow({
-  label,
-  filled,
-  onAdd,
-}: {
-  label: string;
-  filled: boolean;
-  onAdd: () => void;
-}) {
+// HONEST COMING SOON: photo storage (camera/library capture, upload, Supabase
+// Storage) is explicitly out of P0 scope — see BUILD_STATUS.md. This screen
+// previously simulated a photo being added by flipping local state with no
+// real photo ever touched. That is no longer acceptable inside a paid
+// feature, so every stage now shows a plain "coming soon" state instead of
+// pretending to work. Nothing here is tappable into a fake success.
+function PhotoStageRow({ label }: { label: string }) {
   return (
     <View style={styles.stageRow}>
       <View style={styles.stageImageWrap}>
-        <EditorialImage
-          variant="skin-detail"
-          label={filled ? undefined : 'ADD PHOTO'}
-          style={styles.stageImage}
-        />
+        <EditorialImage variant="skin-detail" label="COMING SOON" style={styles.stageImage} />
       </View>
       <View style={styles.stageMeta}>
         <ThemedText variant="bodyLarge" color={colors.textPrimary}>
           {label}
         </ThemedText>
-        <Button
-          label={filled ? 'Replace' : 'Add Photo'}
-          icon={filled ? 'refresh-cw' : 'plus'}
-          variant="ghost"
-          fullWidth={false}
-          onPress={onAdd}
-        />
+        <ThemedText variant="caption" color={colors.textSecondary}>
+          Photo tracking isn&rsquo;t available yet.
+        </ThemedText>
       </View>
     </View>
   );
 }
 
 export default function ProgressPhotosScreen() {
-  const [filled, setFilled] = useState<Record<StageId, boolean>>({
-    baseline: false,
-    two_weeks: false,
-    one_month: false,
-    three_months: false,
-  });
-
-  const addPhoto = (stage: StageId) => {
-    // MOCK: no camera/library integration yet — this simulates a photo
-    // having been added so the surrounding UI (comparison, progress
-    // story) can be previewed without wiring real device storage.
-    setFilled((prev) => ({ ...prev, [stage]: true }));
-  };
-
-  const filledCount = Object.values(filled).filter(Boolean).length;
-
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader title="Progress Photos" />
 
         <ThemedText variant="body" color={colors.textSecondary} style={styles.intro}>
-          Private tracking photos for your own history — separate from Preview and Glow, which
-          create AI-generated images. These stay on this device for now.
+          Private tracking photos for your own history — separate from Preview, which creates
+          AI-generated images. This feature is coming soon.
         </ThemedText>
 
         <Rule style={styles.rule} />
 
         {stages.map((stage) => (
-          <PhotoStageRow
-            key={stage.id}
-            label={stage.label}
-            filled={filled[stage.id]}
-            onAdd={() => addPhoto(stage.id)}
-          />
+          <PhotoStageRow key={stage.id} label={stage.label} />
         ))}
 
         <Rule style={styles.rule} />
@@ -99,16 +66,14 @@ export default function ProgressPhotosScreen() {
               Create Progress Story
             </ThemedText>
             <ThemedText variant="caption" color={colors.textSecondary}>
-              {filledCount >= 2
-                ? 'Turn your photos into a private "Then → Now" story.'
-                : 'Add at least two photos to unlock a shareable story.'}
+              Coming soon.
             </ThemedText>
           </View>
-          <Button label="Create" variant="secondary" fullWidth={false} disabled={filledCount < 2} />
         </View>
 
         <ThemedText variant="caption" color={colors.textMuted} style={styles.footnote}>
-          Photos stay private unless you explicitly choose to create and export a share image.
+          Photos stay private unless you explicitly choose to create and export a share image, once
+          this feature ships.
         </ThemedText>
       </ScrollView>
     </Screen>

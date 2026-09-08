@@ -333,7 +333,7 @@ was found that would need it.
 ## RevenueCat Prerequisites (architecture only --- not integrated)
 
 Audited `lib/services/billing.ts` (the existing `BillingProvider`
-interface: `getEntitlement()`, `purchaseMonthly()`, `purchaseAnnual()`,
+interface: `getEntitlement()`, `purchaseWeekly()`, `purchaseAnnual()`,
 `restorePurchases()`) and `types/index.ts` (`Entitlement = 'free' |
 'premium'`). The interface already matches what RevenueCat's SDK needs
 to sit behind. Nothing was changed --- RevenueCat itself was **not**

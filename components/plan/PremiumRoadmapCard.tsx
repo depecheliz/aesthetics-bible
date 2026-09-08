@@ -5,6 +5,7 @@ import { ThemedText } from '../typography/ThemedText';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import type { TreatmentCategory } from '../../src/domain/recommendation';
+import { analytics } from '../../lib/services/analyticsClient';
 import { colors, spacing } from '../../constants/theme';
 
 type PremiumRoadmapCardProps = {
@@ -36,13 +37,26 @@ export function PremiumRoadmapCard({ alternates }: PremiumRoadmapCardProps) {
           <ThemedText variant="bodyLarge" color={colors.textOnIvory} style={styles.lockedLine}>
             Full treatment comparisons
           </ThemedText>
+          <ThemedText variant="bodyLarge" color={colors.textOnIvory} style={styles.lockedLine}>
+            Your personal roadmap
+          </ThemedText>
+          <ThemedText variant="bodyLarge" color={colors.textOnIvory} style={styles.lockedLine}>
+            AI Preview — see your possibilities
+          </ThemedText>
         </View>
         <View style={styles.lockOverlay}>
           <Feather name="lock" size={18} color={colors.textOnIvory} />
         </View>
       </View>
 
-      <Button label="Unlock My Full Plan" onPress={() => router.push('/paywall')} style={styles.unlockButton} />
+      <Button
+        label="Unlock My Full Plan"
+        onPress={() => {
+          analytics.track('full_roadmap_clicked');
+          router.push('/paywall');
+        }}
+        style={styles.unlockButton}
+      />
     </Card>
   );
 }

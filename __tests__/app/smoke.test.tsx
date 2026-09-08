@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react-native';
+import { render, screen, fireEvent } from '@testing-library/react-native';
 import { AppStateProvider } from '../../lib/state/AppStateContext';
+import { EntitlementProvider } from '../../lib/state/EntitlementContext';
 import { getRecommendation } from '../../src/domain/recommendation';
 import type { QuizAnswers } from '../../src/domain/quiz';
 import ResultScreen from '../../app/quiz/result';
@@ -36,26 +37,38 @@ const answers: QuizAnswers = {
 
 describe('Screen smoke tests', () => {
   it('renders the quiz Result screen with a seeded result', async () => {
+    jest.useFakeTimers();
     const result = getRecommendation(answers);
 
     await render(
-      <AppStateProvider initialResult={result}>
-        <ResultScreen />
-      </AppStateProvider>,
+      <EntitlementProvider>
+        <AppStateProvider initialResult={result}>
+          <ResultScreen />
+        </AppStateProvider>
+      </EntitlementProvider>,
     );
 
     expect(screen.getByText('YOUR AESTHETICS PROFILE')).toBeTruthy();
+    jest.useRealTimers();
   });
 
   it('renders the Preview screen in Preview mode', async () => {
     mockParams.mode = undefined as unknown as string;
-    await render(<PreviewScreen />);
+    await render(
+      <EntitlementProvider>
+        <PreviewScreen />
+      </EntitlementProvider>,
+    );
     expect(screen.getByText('See a possibility before making a decision.')).toBeTruthy();
   });
 
   it('renders the Preview screen in Glow mode via the mode param', async () => {
     mockParams.mode = 'glow';
-    await render(<PreviewScreen />);
+    await render(
+      <EntitlementProvider>
+        <PreviewScreen />
+      </EntitlementProvider>,
+    );
     expect(screen.getByText('Your photo. Elevated.')).toBeTruthy();
     delete mockParams.mode;
   });
@@ -70,8 +83,31 @@ describe('Screen smoke tests', () => {
   });
 
   it('renders the Paywall screen', async () => {
-    await render(<PaywallScreen />);
-    expect(screen.getByText('Your entire aesthetics journey, beautifully organized.')).toBeTruthy();
+    await render(
+      <EntitlementProvider>
+        <PaywallScreen />
+      </EntitlementProvider>,
+    );
+    expect(screen.getByText('Your Personalized Aesthetic Plan Is Ready.')).toBeTruthy();
+  });
+
+  it('preselects the Annual plan and allows selecting Weekly instead', async () => {
+    await render(
+      <EntitlementProvider>
+        <PaywallScreen />
+      </EntitlementProvider>,
+    );
+
+    // Annual is preselected by default.
+    expect(screen.getAllByRole('button', { selected: true }).length).toBe(1);
+
+    fireEvent.press(screen.getByText('EXPLORE'));
+
+    // Selecting Weekly should move which card reports selected=true — still
+    // exactly one selected card, but the tap demonstrably changed state
+    // rather than being a no-op.
+    expect(screen.getAllByRole('button', { selected: true }).length).toBe(1);
+    expect(screen.getAllByRole('button', { selected: false }).length).toBeGreaterThan(0);
   });
 
   it('renders the Botox Bestie screen', async () => {

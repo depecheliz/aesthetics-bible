@@ -16,6 +16,8 @@ type EditorialModuleProps = {
   imageVariant?: EditorialImageVariant;
   /** Override the variant's default campaign photo for this module. */
   imageUri?: ImageSourcePropType;
+  /** e.g. "COMING SOON" — shown instead of the EXPLORE affordance when the feature isn't real yet. */
+  badge?: string;
   onPress: () => void;
 };
 
@@ -33,6 +35,7 @@ export function EditorialModule({
   layout,
   imageVariant,
   imageUri,
+  badge,
   onPress,
 }: EditorialModuleProps) {
   const textBlock = (
@@ -49,12 +52,20 @@ export function EditorialModule({
       <ThemedText variant="body" color={colors.textSecondary} style={styles.subtitle}>
         {subtitle}
       </ThemedText>
-      <View style={styles.exploreRow}>
-        <ThemedText variant="caption" color={colors.accent} style={styles.exploreLabel}>
-          EXPLORE
-        </ThemedText>
-        <Feather name="arrow-right" size={13} color={colors.accent} />
-      </View>
+      {badge ? (
+        <View style={styles.badgeRow}>
+          <ThemedText variant="caption" color={colors.textMuted} style={styles.badgeLabel}>
+            {badge}
+          </ThemedText>
+        </View>
+      ) : (
+        <View style={styles.exploreRow}>
+          <ThemedText variant="caption" color={colors.accent} style={styles.exploreLabel}>
+            EXPLORE
+          </ThemedText>
+          <Feather name="arrow-right" size={13} color={colors.accent} />
+        </View>
+      )}
     </View>
   );
 
@@ -117,6 +128,14 @@ const styles = StyleSheet.create({
   },
   exploreLabel: {
     letterSpacing: 1.4,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  badgeLabel: {
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
   },
   bottomRule: {
     marginTop: spacing.lg,

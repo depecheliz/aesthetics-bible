@@ -43,6 +43,7 @@ function DiscoverModules() {
         subtitle="Create polished social images."
         layout="image-left"
         imageVariant="social"
+        badge="COMING SOON"
         onPress={() => router.push({ pathname: '/preview', params: { mode: 'glow' } })}
       />
       <EditorialModule
@@ -67,7 +68,7 @@ function NewUserHome() {
         </ThemedText>
       </View>
       <ThemedText variant="displayHero" style={styles.headline}>
-        See your possibilities.{'\n'}Discover your options.{'\n'}Plan your aesthetic journey.
+        See your potential.{'\n'}Build your plan.
       </ThemedText>
 
       <EditorialImage variant="portrait" uri={campaignImages.homeHero} monogram style={styles.heroImage} />
