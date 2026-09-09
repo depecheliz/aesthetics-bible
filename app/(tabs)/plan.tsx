@@ -100,7 +100,10 @@ export default function PlanScreen() {
           ))}
         </View>
 
-        <PremiumRoadmapCard alternates={alternates} />
+        <PremiumRoadmapCard
+          alternates={alternates}
+          personalizedReason={`Matched to your ${concernLabels[result.concern].toLowerCase()} goals, focused on your ${areaLabels[result.area].toLowerCase()}.`}
+        />
       </ScrollView>
     </Screen>
   );

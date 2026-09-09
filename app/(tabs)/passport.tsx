@@ -10,9 +10,10 @@ import { EntryCard } from '../../components/passport/EntryCard';
 import { AccountSection } from '../../components/passport/AccountSection';
 import { campaignImages } from '../../assets/brand/campaign';
 import { useAppState } from '../../lib/state/AppStateContext';
+import { useOptionalAuth } from '../../lib/state/AuthContext';
 import { useRequireAuth } from '../../lib/state/useRequireAuth';
 import { formatCurrency, sortEntriesByDateDesc, summarizeEntriesThisYear } from '../../src/domain/passport';
-import { colors, spacing } from '../../constants/theme';
+import { colors, radius, spacing } from '../../constants/theme';
 
 function PassportEmptyState({ onAddTreatment }: { onAddTreatment: () => void }) {
   return (
@@ -37,8 +38,13 @@ function PassportEmptyState({ onAddTreatment }: { onAddTreatment: () => void }) 
 
 export default function PassportScreen() {
   const { passportEntries } = useAppState();
+  const auth = useOptionalAuth();
   const requireAuth = useRequireAuth();
   const handleAddTreatment = () => requireAuth(() => router.push('/passport/add'));
+  // Signed-out sessions render AppStateContext's seeded sample entries so
+  // the screen isn't empty before sign-in — labeling it clearly here keeps
+  // that from ever being mistaken for the user's own treatment history.
+  const isSampleData = !auth?.user;
 
   if (passportEntries.length === 0) {
     return <PassportEmptyState onAddTreatment={handleAddTreatment} />;
@@ -50,6 +56,14 @@ export default function PassportScreen() {
   return (
     <Screen edges={['top']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {isSampleData && (
+          <View style={styles.exampleBanner}>
+            <Feather name="info" size={14} color={colors.accent} />
+            <ThemedText variant="caption" color={colors.accent} style={styles.exampleBannerText}>
+              EXAMPLE — sign in to build your own Passport
+            </ThemedText>
+          </View>
+        )}
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
           YOUR YEAR IN AESTHETICS
         </ThemedText>
@@ -156,6 +170,22 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     marginBottom: spacing.sm,
+  },
+  exampleBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    alignSelf: 'flex-start',
+    backgroundColor: colors.surfaceRaised,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
+    marginBottom: spacing.md,
+  },
+  exampleBannerText: {
+    letterSpacing: 0.4,
   },
   heroStat: {
     marginBottom: spacing.lg,

@@ -6,6 +6,7 @@ import { Screen } from '../../components/layout/Screen';
 import { ThemedText } from '../../components/typography/ThemedText';
 import { SearchInput } from '../../components/ui/SearchInput';
 import { FilterChip } from '../../components/ui/FilterChip';
+import { EdgeFade } from '../../components/ui/EdgeFade';
 import { Rule } from '../../components/ui/Rule';
 import {
   bibleCategoryFilters,
@@ -91,31 +92,37 @@ export default function BibleScreen() {
         <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
           BY CONCERN
         </ThemedText>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-          {bibleConcerns.map((concern) => (
-            <FilterChip
-              key={concern.id}
-              label={concern.name}
-              selected={selectedConcernId === concern.id}
-              onPress={() => selectConcern(concern.id)}
-            />
-          ))}
-        </ScrollView>
+        <View style={styles.chipScrollWrap}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+            {bibleConcerns.map((concern) => (
+              <FilterChip
+                key={concern.id}
+                label={concern.name}
+                selected={selectedConcernId === concern.id}
+                onPress={() => selectConcern(concern.id)}
+              />
+            ))}
+          </ScrollView>
+          <EdgeFade side="right" />
+        </View>
 
         <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
           CATEGORY
         </ThemedText>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-          <FilterChip label="All" selected={selectedCategory === 'all'} onPress={() => selectCategory('all')} />
-          {bibleCategoryFilters.map((categoryId) => (
-            <FilterChip
-              key={categoryId}
-              label={treatmentCategories[categoryId].name}
-              selected={selectedCategory === categoryId}
-              onPress={() => selectCategory(categoryId)}
-            />
-          ))}
-        </ScrollView>
+        <View style={styles.chipScrollWrap}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+            <FilterChip label="All" selected={selectedCategory === 'all'} onPress={() => selectCategory('all')} />
+            {bibleCategoryFilters.map((categoryId) => (
+              <FilterChip
+                key={categoryId}
+                label={treatmentCategories[categoryId].name}
+                selected={selectedCategory === categoryId}
+                onPress={() => selectCategory(categoryId)}
+              />
+            ))}
+          </ScrollView>
+          <EdgeFade side="right" />
+        </View>
 
         <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
           TREATMENT INDEX
@@ -230,8 +237,11 @@ const styles = StyleSheet.create({
     opacity: 0.4,
     marginTop: spacing.sm,
   },
-  chipScroll: {
+  chipScrollWrap: {
+    position: 'relative',
     marginHorizontal: -spacing.lg,
+  },
+  chipScroll: {
     paddingHorizontal: spacing.lg,
   },
   results: {},

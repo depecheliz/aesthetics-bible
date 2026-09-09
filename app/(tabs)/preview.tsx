@@ -198,7 +198,7 @@ export default function PreviewScreen() {
 
             <EditorialImage
               variant="portrait"
-              uri={campaignImages.previewHero}
+              uri={campaignImages.previewHeroCrop}
               label="AI VISUALIZATION"
               style={styles.heroImage}
             />

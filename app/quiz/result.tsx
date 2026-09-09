@@ -11,19 +11,12 @@ import { TreatmentActionsGrid } from '../../components/plan/TreatmentActionsGrid
 import { PremiumRoadmapCard } from '../../components/plan/PremiumRoadmapCard';
 import { ShareCard, ShareCardStatRow } from '../../components/media/ShareCard';
 import { useAppState } from '../../lib/state/AppStateContext';
-import { useEntitlement } from '../../lib/state/EntitlementContext';
 import { analytics } from '../../lib/services/analyticsClient';
 import { areaLabels, concernLabels, intensityLabels } from '../../src/domain/quiz';
 import { colors, spacing } from '../../constants/theme';
 
-// How long the free reveal stays uninterrupted before the paywall is
-// presented automatically. Long enough to read the top match; short enough
-// that the paywall isn't just a hidden button further down the screen.
-const AUTO_PAYWALL_DELAY_MS = 3500;
-
 export default function ResultScreen() {
   const { result } = useAppState();
-  const { isPremium } = useEntitlement();
   const hasTrackedView = useRef(false);
 
   useEffect(() => {
@@ -40,15 +33,9 @@ export default function ResultScreen() {
     analytics.track('top_match_viewed');
   }, [result]);
 
-  useEffect(() => {
-    if (!result || isPremium) {
-      return;
-    }
-    const timer = setTimeout(() => {
-      router.push('/paywall');
-    }, AUTO_PAYWALL_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [result, isPremium]);
+  // Intentionally no auto-navigation to the paywall here. The Result should
+  // create desire on its own; unlocking is a choice the user makes via
+  // PremiumRoadmapCard's CTA below, not an interruption forced on a timer.
 
   if (!result) {
     return null;
@@ -115,7 +102,10 @@ export default function ResultScreen() {
           <ShareCardStatRow label="#1 Category" value={category.name} />
         </ShareCard>
 
-        <PremiumRoadmapCard alternates={alternates} />
+        <PremiumRoadmapCard
+          alternates={alternates}
+          personalizedReason={`Matched to your ${concernLabels[result.concern].toLowerCase()} goals, focused on your ${areaLabels[result.area].toLowerCase()}.`}
+        />
       </ScrollView>
     </Screen>
   );

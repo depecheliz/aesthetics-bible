@@ -1,8 +1,10 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
+import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { treatmentCategories, type TreatmentCategoryId } from '../../src/domain/recommendation';
 import {
@@ -50,12 +52,27 @@ export default function CompareScreen() {
   const categoryB = categoryIdB ? treatmentCategories[categoryIdB] : undefined;
 
   if (!categoryA || !categoryB) {
+    // Reached only via a direct/deep-link URL missing valid ids — every
+    // in-app entry point (Bible detail, Bible list, Plan) already guards
+    // against this. A deliberate, safe state rather than a picker: send
+    // the user somewhere useful instead of leaving them at a dead end.
     return (
       <Screen>
         <ScreenHeader />
-        <ThemedText variant="bodyLarge" color={colors.textSecondary} style={styles.notFound}>
-          Choose two categories to compare from your plan.
-        </ThemedText>
+        <View style={styles.emptyState}>
+          <Feather name="git-branch" size={22} color={colors.textMuted} style={styles.emptyIcon} />
+          <ThemedText variant="bodyLarge" color={colors.textSecondary} style={styles.notFound}>
+            Choose two categories to compare from your plan.
+          </ThemedText>
+          <Button
+            label="Browse The Bible"
+            variant="secondary"
+            fullWidth={false}
+            icon="book-open"
+            onPress={() => router.push('/bible')}
+            style={styles.emptyCta}
+          />
+        </View>
       </Screen>
     );
   }
@@ -142,8 +159,20 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: spacing.xxxl,
   },
+  emptyState: {
+    alignItems: 'center',
+    paddingTop: spacing.xxl,
+    paddingHorizontal: spacing.lg,
+  },
+  emptyIcon: {
+    marginBottom: spacing.md,
+  },
   notFound: {
-    marginTop: spacing.xl,
+    textAlign: 'center',
+    marginBottom: spacing.lg,
+  },
+  emptyCta: {
+    paddingHorizontal: spacing.xl,
   },
   eyebrow: {
     marginTop: spacing.md,

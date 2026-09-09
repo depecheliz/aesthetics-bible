@@ -67,7 +67,7 @@ export const treatmentCategories: Record<TreatmentCategoryId, TreatmentCategory>
     costTier: 2,
     downtimeContext: 'Typically no downtime — most people return to normal activity immediately.',
     costContext: 'Commonly $300–$700 per session, depending on area and provider.',
-    longevityContext: 'Results are commonly explored as lasting roughly 3–4 months.',
+    longevityContext: 'Results typically last 3–4 months.',
   },
   fillers: {
     id: 'fillers',
@@ -80,7 +80,7 @@ export const treatmentCategories: Record<TreatmentCategoryId, TreatmentCategory>
     costTier: 3,
     downtimeContext: 'Some swelling or bruising is common for a few days.',
     costContext: 'Commonly $600–$1,200 per syringe, depending on area and product.',
-    longevityContext: 'Results are commonly explored as lasting 6–18 months depending on area.',
+    longevityContext: 'Results typically last 6–18 months, depending on the area treated.',
   },
   skin_boosters: {
     id: 'skin_boosters',
@@ -93,7 +93,7 @@ export const treatmentCategories: Record<TreatmentCategoryId, TreatmentCategory>
     costTier: 2,
     downtimeContext: 'Minimal downtime — light redness or small bumps may settle within a day.',
     costContext: 'Commonly $350–$700 per session.',
-    longevityContext: 'Results are commonly explored as building over a short series, lasting months.',
+    longevityContext: 'Results typically build over a short series and last several months.',
   },
   biostimulators: {
     id: 'biostimulators',
@@ -106,7 +106,7 @@ export const treatmentCategories: Record<TreatmentCategoryId, TreatmentCategory>
     costTier: 3,
     downtimeContext: 'Mild swelling or tenderness for a few days is common.',
     costContext: 'Commonly $700–$1,500 per session, often in a series.',
-    longevityContext: 'Results are commonly explored as building gradually and lasting a year or more.',
+    longevityContext: 'Results typically build gradually and last a year or more.',
   },
   lasers: {
     id: 'lasers',
@@ -119,7 +119,7 @@ export const treatmentCategories: Record<TreatmentCategoryId, TreatmentCategory>
     costTier: 3,
     downtimeContext: 'Redness or flaking commonly explored for several days depending on intensity.',
     costContext: 'Commonly $300–$900 per session.',
-    longevityContext: 'Results are commonly explored as building over a short series.',
+    longevityContext: 'Results typically build over a short series of sessions.',
   },
   rf: {
     id: 'rf',
@@ -132,7 +132,7 @@ export const treatmentCategories: Record<TreatmentCategoryId, TreatmentCategory>
     costTier: 3,
     downtimeContext: 'Mild redness or swelling for a few days is common with more intensive devices.',
     costContext: 'Commonly $500–$1,200 per session, often in a series.',
-    longevityContext: 'Results are commonly explored as building gradually over several months.',
+    longevityContext: 'Results typically build gradually over several months.',
   },
   ultrasound: {
     id: 'ultrasound',
@@ -145,7 +145,7 @@ export const treatmentCategories: Record<TreatmentCategoryId, TreatmentCategory>
     costTier: 4,
     downtimeContext: 'Typically no downtime, though mild tenderness may occur.',
     costContext: 'Commonly $1,000–$2,500 per session.',
-    longevityContext: 'Results are commonly explored as building over months and lasting up to a year.',
+    longevityContext: 'Results typically build over a few months and can last up to a year.',
   },
   microneedling: {
     id: 'microneedling',
@@ -158,7 +158,7 @@ export const treatmentCategories: Record<TreatmentCategoryId, TreatmentCategory>
     costTier: 2,
     downtimeContext: 'Redness commonly explored for 1–3 days.',
     costContext: 'Commonly $300–$700 per session, often in a series.',
-    longevityContext: 'Results are commonly explored as building gradually over a series of sessions.',
+    longevityContext: 'Results typically build gradually over a series of sessions.',
   },
   peels: {
     id: 'peels',
@@ -171,7 +171,7 @@ export const treatmentCategories: Record<TreatmentCategoryId, TreatmentCategory>
     costTier: 1,
     downtimeContext: 'Flaking or peeling commonly explored for several days depending on strength.',
     costContext: 'Commonly $150–$400 per session.',
-    longevityContext: 'Results are commonly explored as building with a regular series.',
+    longevityContext: 'Results typically build with a regular series of treatments.',
   },
   threads: {
     id: 'threads',
@@ -184,7 +184,7 @@ export const treatmentCategories: Record<TreatmentCategoryId, TreatmentCategory>
     costTier: 3,
     downtimeContext: 'Mild swelling, tenderness, or pulling sensation commonly explored for about a week.',
     costContext: 'Commonly $1,000–$2,500 per session.',
-    longevityContext: 'Results are commonly explored as lasting around 12–18 months.',
+    longevityContext: 'Results typically last around 12–18 months.',
   },
   skincare: {
     id: 'skincare',
@@ -197,7 +197,7 @@ export const treatmentCategories: Record<TreatmentCategoryId, TreatmentCategory>
     costTier: 1,
     downtimeContext: 'No downtime — fits into a normal daily routine.',
     costContext: 'Commonly $30–$150 per month depending on products chosen.',
-    longevityContext: 'Results are commonly explored as building gradually with consistent daily use.',
+    longevityContext: 'Results typically build gradually with consistent daily use.',
   },
   at_home_devices: {
     id: 'at_home_devices',
@@ -210,7 +210,7 @@ export const treatmentCategories: Record<TreatmentCategoryId, TreatmentCategory>
     costTier: 2,
     downtimeContext: 'No downtime — used at home on your own schedule.',
     costContext: 'Commonly $150–$500 as a one-time device cost.',
-    longevityContext: 'Results are commonly explored as building gradually with regular use.',
+    longevityContext: 'Results typically build gradually with regular use.',
   },
 };
 

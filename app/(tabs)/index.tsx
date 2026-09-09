@@ -23,7 +23,7 @@ function DiscoverModules() {
         subtitle="Understand treatments before making decisions."
         layout="image-right"
         imageVariant="skin-detail"
-        imageUri={campaignImages.skinDetail}
+        imageUri={campaignImages.skinDetailCrop}
         onPress={() => router.push('/bible')}
       />
       <EditorialModule
@@ -33,7 +33,7 @@ function DiscoverModules() {
         subtitle="Explore aesthetic looks before making a decision."
         layout="image-top"
         imageVariant="portrait"
-        imageUri={campaignImages.previewHero}
+        imageUri={campaignImages.previewHeroCrop}
         onPress={() => router.push('/preview')}
       />
       <EditorialModule
@@ -64,14 +64,14 @@ function NewUserHome() {
       <View style={styles.brandRow}>
         <Monogram size="sm" />
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
-          THE AESTHETICS BIBLE
+          AESTELLA
         </ThemedText>
       </View>
       <ThemedText variant="displayHero" style={styles.headline}>
         See your potential.{'\n'}Build your plan.
       </ThemedText>
 
-      <EditorialImage variant="portrait" uri={campaignImages.homeHero} monogram style={styles.heroImage} />
+      <EditorialImage variant="portrait" uri={campaignImages.homeHeroCrop} monogram style={styles.heroImage} />
 
       <Button
         label="Build My Aesthetics Plan"

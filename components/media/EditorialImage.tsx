@@ -39,9 +39,9 @@ type VariantConfig = {
 };
 
 const variantConfig: Record<EditorialImageVariant, VariantConfig> = {
-  portrait: { aspectRatio: 4 / 5, icon: 'user', defaultSource: campaignImages.homeHero },
+  portrait: { aspectRatio: 4 / 5, icon: 'user', defaultSource: campaignImages.homeHeroCrop },
   'skin-detail': { aspectRatio: 1, icon: 'aperture' },
-  treatment: { aspectRatio: 2 / 3, icon: 'feather', defaultSource: campaignImages.treatmentEditorial },
+  treatment: { aspectRatio: 2 / 3, icon: 'feather', defaultSource: campaignImages.treatmentEditorialCrop },
   social: { aspectRatio: 4 / 5, icon: 'sun', defaultSource: campaignImages.glowSocial },
   'face-zone': { aspectRatio: 1, icon: 'grid' },
 };

@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { Screen } from '../components/layout/Screen';
 import { ScreenHeader } from '../components/layout/ScreenHeader';
 import { ThemedText } from '../components/typography/ThemedText';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Rule } from '../components/ui/Rule';
-import { BeforeAfterFrame } from '../components/media/BeforeAfterFrame';
+import { PlanPreviewMockup } from '../components/media/PlanPreviewMockup';
 import { Monogram } from '../components/brand/Monogram';
-import { campaignImages } from '../assets/brand/campaign';
 import { useEntitlement } from '../lib/state/EntitlementContext';
 import { analytics } from '../lib/services/analyticsClient';
 import { colors, radius, spacing } from '../constants/theme';
@@ -66,15 +66,7 @@ export default function PaywallScreen() {
           Unlock your full roadmap, AI Preview, and your private Aesthetics Passport.
         </ThemedText>
 
-        <BeforeAfterFrame
-          leftLabel="TODAY"
-          rightLabel="ORGANIZED"
-          leftUri={campaignImages.homeHero}
-          rightUri={campaignImages.paywallStory}
-        />
-        <ThemedText variant="caption" color={colors.textMuted} style={styles.storyCaption}>
-          From scattered notes and screenshots to one private, beautiful record.
-        </ThemedText>
+        <PlanPreviewMockup />
 
         <Rule style={styles.rule} />
 
@@ -100,8 +92,16 @@ export default function PaywallScreen() {
             <Pressable onPress={() => selectPlan('annual')} accessibilityRole="button" accessibilityState={{ selected: selectedPlan === 'annual' }}>
               <Card
                 variant="ivory"
-                style={[styles.priceCard, selectedPlan === 'annual' && styles.priceCardSelected]}
+                style={[
+                  styles.priceCard,
+                  selectedPlan === 'annual' ? styles.priceCardSelected : styles.priceCardUnselected,
+                ]}
               >
+                {selectedPlan === 'annual' && (
+                  <View style={styles.selectedCheck}>
+                    <Feather name="check" size={14} color={colors.textOnIvory} />
+                  </View>
+                )}
                 <View style={styles.bestValueTag}>
                   <ThemedText variant="caption" color={colors.textOnIvory}>
                     BEST VALUE
@@ -128,8 +128,16 @@ export default function PaywallScreen() {
             <Pressable onPress={() => selectPlan('weekly')} accessibilityRole="button" accessibilityState={{ selected: selectedPlan === 'weekly' }}>
               <Card
                 variant="ivory"
-                style={[styles.priceCard, selectedPlan === 'weekly' && styles.priceCardSelected]}
+                style={[
+                  styles.priceCard,
+                  selectedPlan === 'weekly' ? styles.priceCardSelected : styles.priceCardUnselected,
+                ]}
               >
+                {selectedPlan === 'weekly' && (
+                  <View style={styles.selectedCheck}>
+                    <Feather name="check" size={14} color={colors.textOnIvory} />
+                  </View>
+                )}
                 <ThemedText variant="eyebrow" color={colors.textOnIvory} style={styles.planName}>
                   EXPLORE
                 </ThemedText>
@@ -141,6 +149,9 @@ export default function PaywallScreen() {
                 </ThemedText>
                 <ThemedText variant="caption" color={colors.textMuted} style={styles.priceSubtext}>
                   For exploring your personalized plan and possibilities.
+                </ThemedText>
+                <ThemedText variant="caption" color={colors.textOnIvory} style={styles.priceCompare}>
+                  That&rsquo;s $11.99 every week — the annual plan works out to just $1.90/week.
                 </ThemedText>
               </Card>
             </Pressable>
@@ -194,11 +205,6 @@ const styles = StyleSheet.create({
   subheadline: {
     marginBottom: spacing.lg,
   },
-  storyCaption: {
-    textAlign: 'center',
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
-  },
   rule: {
     width: '100%',
     opacity: 0.4,
@@ -213,11 +219,26 @@ const styles = StyleSheet.create({
   },
   priceCard: {
     marginTop: spacing.md,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: 'transparent',
+    position: 'relative',
   },
   priceCardSelected: {
     borderColor: colors.accent,
+  },
+  priceCardUnselected: {
+    opacity: 0.55,
+  },
+  selectedCheck: {
+    position: 'absolute',
+    top: spacing.sm,
+    right: spacing.sm,
+    width: 24,
+    height: 24,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   premiumActiveCard: {
     marginTop: spacing.lg,
@@ -227,7 +248,7 @@ const styles = StyleSheet.create({
   },
   bestValueTag: {
     alignSelf: 'flex-start',
-    backgroundColor: colors.accentLight,
+    backgroundColor: colors.accent,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.xs,
     paddingVertical: 2,
@@ -242,6 +263,10 @@ const styles = StyleSheet.create({
   priceSubtext: {
     marginTop: spacing.xs,
     marginBottom: spacing.xs,
+  },
+  priceCompare: {
+    marginTop: spacing.xs,
+    opacity: 0.7,
   },
   unlockButton: {
     marginTop: spacing.lg,

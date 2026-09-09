@@ -33,7 +33,7 @@ export default function BotoxBestieScreen() {
           </View>
           <EditorialImage
             variant="portrait"
-            uri={campaignImages.botoxBestie}
+            uri={campaignImages.botoxBestieCrop}
             aspectRatio={BESTIE_ASPECT_RATIO}
             noDefault
             style={styles.headerImage}

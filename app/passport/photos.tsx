@@ -26,7 +26,10 @@ function PhotoStageRow({ label }: { label: string }) {
   return (
     <View style={styles.stageRow}>
       <View style={styles.stageImageWrap}>
-        <EditorialImage variant="skin-detail" label="COMING SOON" style={styles.stageImage} />
+        {/* compact: this thumbnail is too narrow for the "COMING SOON"
+            label chip to render without clipping, and the adjacent caption
+            already says photo tracking isn't available yet. */}
+        <EditorialImage variant="skin-detail" compact style={styles.stageImage} />
       </View>
       <View style={styles.stageMeta}>
         <ThemedText variant="bodyLarge" color={colors.textPrimary}>

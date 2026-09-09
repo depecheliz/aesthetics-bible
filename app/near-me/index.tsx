@@ -11,13 +11,17 @@ import { colors, spacing } from '../../constants/theme';
 
 // Static sample data standing in for a future Google Places integration.
 // Shaped to match ProviderResult so the UI doesn't change when it's wired up.
+// Ratings/review counts are intentionally null here (not fabricated
+// numbers) — this is placeholder data standing in for a not-yet-live
+// Google Places integration, and precise-looking stats would misrepresent
+// it as a real result. See CLAUDE.md's honesty rules for mocked features.
 const sampleProviders: ProviderResult[] = [
   {
     id: 'sample-1',
     name: 'Ivory & Ash Aesthetics Studio',
     category: 'Medical Spa',
-    rating: 4.9,
-    reviewCount: 214,
+    rating: null,
+    reviewCount: null,
     distanceMeters: 1200,
     address: '128 Wren Street',
   },
@@ -25,8 +29,8 @@ const sampleProviders: ProviderResult[] = [
     id: 'sample-2',
     name: 'The Skin Atelier',
     category: 'Dermatology Clinic',
-    rating: 4.8,
-    reviewCount: 156,
+    rating: null,
+    reviewCount: null,
     distanceMeters: 2400,
     address: '44 Camden Row',
   },
@@ -34,8 +38,8 @@ const sampleProviders: ProviderResult[] = [
     id: 'sample-3',
     name: 'Maison Derma Clinic',
     category: 'Aesthetics Clinic',
-    rating: 4.7,
-    reviewCount: 98,
+    rating: null,
+    reviewCount: null,
     distanceMeters: 3100,
     address: '9 Belgrave Court',
   },
@@ -61,9 +65,11 @@ function ProviderRow({ provider }: { provider: ProviderResult }) {
         <ThemedText variant="bodyLarge" color={colors.textPrimary}>
           {provider.name}
         </ThemedText>
-        <ThemedText variant="caption" color={colors.textSecondary} style={styles.metaLine}>
-          {provider.rating?.toFixed(1)} ★ · {provider.reviewCount} Google reviews
-        </ThemedText>
+        {provider.rating !== null && provider.reviewCount !== null && (
+          <ThemedText variant="caption" color={colors.textSecondary} style={styles.metaLine}>
+            {provider.rating.toFixed(1)} ★ · {provider.reviewCount} Google reviews
+          </ThemedText>
+        )}
         <ThemedText variant="caption" color={colors.textSecondary} style={styles.metaLine}>
           {formatDistance(provider.distanceMeters)} · {provider.category}
         </ThemedText>
