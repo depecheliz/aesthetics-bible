@@ -364,8 +364,8 @@ depends on it or is affected by it.
 Audit + configuration only --- no product features added, nothing
 submitted or built. Full detail in `STORE_READINESS.md`.
 
-- **Identifiers:** `com.aestheticsbible.app` already consistent for iOS
-  and Android; unchanged. URL scheme `aestheticsbible` already present;
+- **Identifiers:** `com.aestella.app` already consistent for iOS
+  and Android; unchanged. URL scheme `aestella` already present;
   unchanged.
 - **Development build:** `expo-dev-client` installed; `eas.json` added
   (development/preview/production profiles). No build has been run and

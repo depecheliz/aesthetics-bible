@@ -14,11 +14,11 @@ below required a live backend to complete.
 
 ## Identifiers
 
-- **iOS bundle identifier:** `com.aestheticsbible.app`
-- **Android package name:** `com.aestheticsbible.app`
+- **iOS bundle identifier:** `com.aestella.app`
+- **Android package name:** `com.aestella.app`
 - Consistent across both platforms in `app.json`. **COMPLETE.** No
   change made or needed.
-- **URL scheme:** `aestheticsbible` --- already present in `app.json`,
+- **URL scheme:** `aestella` --- already present in `app.json`,
   unchanged. **COMPLETE.**
 
 ---
@@ -27,7 +27,7 @@ below required a live backend to complete.
 
 | Item | Status | Notes |
 |---|---|---|
-| Bundle ID | COMPLETE | `com.aestheticsbible.app` |
+| Bundle ID | COMPLETE | `com.aestella.app` |
 | App icon | **COMPLETE (pending your visual sign-off)** | Real brand icon --- black `#0B0B0C` background, centered champagne "AB" monogram in Playfair Display SemiBold, no generic Expo art remains. See "Icon & Splash" below. |
 | Splash screen | **COMPLETE (pending your visual sign-off)** | Centered AB monogram + "THE AESTHETICS BIBLE" wordmark in the same treatment used on Home, on the brand black background. No generic Expo art remains. |
 | Development build | READY BUT NOT LIVE | `expo-dev-client` installed, `eas.json` has a `development` profile; no build has been run |
@@ -48,7 +48,7 @@ below required a live backend to complete.
 
 | Item | Status | Notes |
 |---|---|---|
-| Package name | COMPLETE | `com.aestheticsbible.app` |
+| Package name | COMPLETE | `com.aestella.app` |
 | App icon (adaptive) | **COMPLETE (pending your visual sign-off)** | Foreground (AB monogram, transparent), background (solid brand black), and monochrome (white silhouette for Android 13+ themed icons) all replaced with real brand art, verified safe within circle/rounded-square/squircle adaptive masks. |
 | Splash screen | **COMPLETE (pending your visual sign-off)** | Same asset as iOS. |
 | Development build | READY BUT NOT LIVE | Same `expo-dev-client` + `eas.json` as iOS |
@@ -221,7 +221,7 @@ static review only):
   exists --- this wasn't part of Phase 1 scope and remains a **new
   feature**, out of scope for this readiness pass per your instruction).
   The pieces it will need are already in place architecturally: the
-  `aestheticsbible://` scheme, Expo Router's file-based routing (so a
+  `aestella://` scheme, Expo Router's file-based routing (so a
   future `app/auth/reset-password.tsx` route "just works" once linked),
   and the `AuthProvider` interface pattern already used for sign-in/up.
 - **No web-only assumption found.** The one thing that *would* have been
@@ -238,10 +238,10 @@ committed.** No code changes were needed or made in this section.
 
 ## Deep Linking
 
-- **Scheme:** `aestheticsbible` (already configured in `app.json`,
+- **Scheme:** `aestella` (already configured in `app.json`,
   unchanged this phase).
 - **Current handling:** Expo Router auto-registers this scheme; any
-  route under `app/` is reachable via `aestheticsbible://<path>` once a
+  route under `app/` is reachable via `aestella://<path>` once a
   dev/production build exists (Expo Go uses its own `exp://` scheme
   instead, which is one more reason a dev client build matters before
   real device auth-redirect testing).
@@ -249,10 +249,10 @@ committed.** No code changes were needed or made in this section.
   restructuring:
   - **Email confirmation** --- Supabase redirects to a configured URL
     after the user taps the email link; that URL can be set to
-    `aestheticsbible://auth/confirm` (or similar) once a corresponding
+    `aestella://auth/confirm` (or similar) once a corresponding
     route exists.
   - **Password reset** --- same pattern, e.g.
-    `aestheticsbible://auth/reset-password`.
+    `aestella://auth/reset-password`.
   - **Auth redirects generally** --- `AuthContext`'s `onAuthStateChange`
     subscription means once a session exists (however it arrived), the
     whole app reacts automatically; no additional plumbing needed beyond
@@ -261,12 +261,14 @@ committed.** No code changes were needed or made in this section.
     redirect pattern; not built now per your instruction.
 - **Manual step for later, in the Supabase dashboard (not done now,
   requires a decision from you):** Authentication → URL Configuration →
-  add `aestheticsbible://*` to the Redirect URLs allowlist once the
+  add `aestella://*` to the Redirect URLs allowlist once the
   corresponding in-app routes are built, and decide whether email
   templates should link to a hosted web confirmation page (needs a real
-  domain) or go straight to the native scheme. **I have not invented a
-  production redirect URL** --- that decision needs a domain choice from
-  you.
+  domain) or go straight to the native scheme. If a stale
+  `aestheticsbible://*` entry from before this rename still exists in
+  that allowlist, it can be removed once verified unused. **I have not
+  invented a production redirect URL** --- that decision needs a domain
+  choice from you.
 
 ---
 

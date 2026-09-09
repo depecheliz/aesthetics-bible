@@ -1,18 +1,18 @@
 {
   "expo": {
-    "name": "The Aesthetics Bible",
-    "slug": "aesthetics-bible-app",
-    "scheme": "aestheticsbible",
+    "name": "Aestella",
+    "slug": "aestella",
+    "scheme": "aestella",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.aestheticsbible.app"
+      "bundleIdentifier": "com.aestella.app"
     },
     "android": {
-      "package": "com.aestheticsbible.app",
+      "package": "com.aestella.app",
       "adaptiveIcon": {
         "backgroundColor": "#0B0B0C",
         "foregroundImage": "./assets/android-icon-foreground.png",
