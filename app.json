@@ -46,6 +46,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "04e51740-becc-4230-94cd-3469f1db2019"
+      }
+    },
+    "owner": "depecheliz"
   }
 }
