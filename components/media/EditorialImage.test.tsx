@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import { EditorialImage } from './EditorialImage';
 
 /**
@@ -46,5 +46,61 @@ describe('EditorialImage', () => {
 
     expect(second).toBeInstanceOf(Function);
     expect(second).not.toBe(first);
+  });
+});
+
+describe('EditorialImage — zoomable', () => {
+  it('renders no zoom trigger or badge when zoomable is not passed (default false)', async () => {
+    await render(<EditorialImage variant="treatment" label="RF" />);
+
+    expect(screen.queryByTestId('editorial-image-zoom-trigger')).toBeNull();
+    expect(screen.queryByTestId('zoomable-image-modal')).toBeNull();
+  });
+
+  it('opens the full-screen viewer on tap when zoomable is true', async () => {
+    await render(<EditorialImage variant="treatment" zoomable label="RF" />);
+
+    expect(screen.queryByTestId('zoomable-image-modal')).toBeNull();
+
+    await fireEvent.press(screen.getByTestId('editorial-image-zoom-trigger'));
+
+    expect(screen.getByTestId('zoomable-image-modal')).toBeTruthy();
+  });
+
+  it('falls back to the normal source for the zoom viewer when no zoomSource is given', async () => {
+    const source = { uri: 'https://example.com/one-asset.jpg' };
+    await render(<EditorialImage variant="treatment" uri={source} zoomable label="One asset" />);
+
+    await fireEvent.press(screen.getByTestId('editorial-image-zoom-trigger'));
+
+    expect(screen.getByTestId('zoomable-image-modal-image').props.source).toEqual(source);
+  });
+
+  it('opens the zoomSource (not the collapsed source) when a separate zoom source is given', async () => {
+    const preview = { uri: 'https://example.com/preview.jpg' };
+    const full = { uri: 'https://example.com/full-diagram.jpg' };
+    await render(<EditorialImage variant="treatment" uri={preview} zoomSource={full} zoomable label="RF" />);
+
+    await fireEvent.press(screen.getByTestId('editorial-image-zoom-trigger'));
+
+    const modalImageSource = screen.getByTestId('zoomable-image-modal-image').props.source;
+    expect(modalImageSource).toEqual(full);
+    expect(modalImageSource).not.toEqual(preview);
+  });
+
+  it('closing the viewer removes it from the tree', async () => {
+    await render(<EditorialImage variant="treatment" zoomable label="RF" />);
+
+    await fireEvent.press(screen.getByTestId('editorial-image-zoom-trigger'));
+    expect(screen.getByTestId('zoomable-image-modal')).toBeTruthy();
+
+    await fireEvent.press(screen.getByLabelText('Close image viewer'));
+    expect(screen.queryByTestId('zoomable-image-modal')).toBeNull();
+  });
+
+  it('does not render a zoom trigger when zoomable is true but there is no image to show', async () => {
+    await render(<EditorialImage variant="skin-detail" zoomable />);
+
+    expect(screen.queryByTestId('editorial-image-zoom-trigger')).toBeNull();
   });
 });
