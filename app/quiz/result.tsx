@@ -7,6 +7,7 @@ import { ThemedText } from '../../components/typography/ThemedText';
 import { InfoRow } from '../../components/ui/InfoRow';
 import { Rule } from '../../components/ui/Rule';
 import { EditorialImage } from '../../components/media/EditorialImage';
+import { bibleCategoryAspectRatios, bibleCategoryImages } from '../../assets/brand/bible';
 import { TreatmentActionsGrid } from '../../components/plan/TreatmentActionsGrid';
 import { PremiumRoadmapCard } from '../../components/plan/PremiumRoadmapCard';
 import { ShareCard, ShareCardStatRow } from '../../components/media/ShareCard';
@@ -55,7 +56,16 @@ export default function ResultScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader />
 
-        <EditorialImage variant="treatment" label={category.name} style={styles.heroImage} />
+        <EditorialImage
+          variant="treatment"
+          uri={bibleCategoryImages[category.id].preview}
+          zoomSource={bibleCategoryImages[category.id].full}
+          zoomable
+          fit="contain"
+          aspectRatio={bibleCategoryAspectRatios[category.id]}
+          label={category.name}
+          style={styles.heroImage}
+        />
 
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
           YOUR AESTHETICS PROFILE
