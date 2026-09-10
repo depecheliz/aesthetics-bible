@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { InfoRow } from '../../components/ui/InfoRow';
 import { Rule } from '../../components/ui/Rule';
 import { EditorialImage } from '../../components/media/EditorialImage';
+import { bibleCategoryAspectRatios, bibleCategoryImages } from '../../assets/brand/bible';
 import {
   bibleCoreProviderQuestions,
   bibleSpecificProviderQuestions,
@@ -59,7 +60,16 @@ export default function TreatmentDetailScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader />
 
-        <EditorialImage variant="treatment" label={treatment.name} style={styles.heroImage} />
+        <EditorialImage
+          variant="treatment"
+          uri={bibleCategoryImages[treatment.categoryId].preview}
+          zoomSource={bibleCategoryImages[treatment.categoryId].full}
+          zoomable
+          fit="contain"
+          aspectRatio={bibleCategoryAspectRatios[treatment.categoryId]}
+          label={treatment.name}
+          style={styles.heroImage}
+        />
 
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
           THE BIBLE · {category.name.toUpperCase()}
