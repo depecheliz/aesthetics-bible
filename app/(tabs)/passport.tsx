@@ -185,12 +185,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   exampleBannerText: {
+    flexShrink: 1,
     letterSpacing: 0.4,
   },
   heroStat: {
     marginBottom: spacing.lg,
   },
   secondaryStatsRow: {
+    flexWrap: 'wrap',
     flexDirection: 'row',
     gap: spacing.xl,
     marginBottom: spacing.md,
@@ -216,6 +218,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   progressRow: {
+    flexWrap: 'wrap',
     flexDirection: 'row',
     gap: spacing.sm,
   },

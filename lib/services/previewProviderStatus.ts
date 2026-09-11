@@ -5,11 +5,11 @@
  *   1. benchmarks/image-providers/ has been run and a provider chosen
  *      (identity preservation + quality first, cost second).
  *   2. supabase/functions/generate-preview has that provider's adapter
- *      implemented (replacing the NotConfiguredError stub) and is deployed
+ *      selected via PREVIEW_REPLICATE_MODEL and is deployed
  *      with the provider's secret key set via `supabase secrets set`.
  *   3. The preview-sources/preview-results Storage buckets exist (see
  *      supabase/migrations/20260906000001_create_preview_storage_buckets.sql)
- *      on a reactivated Supabase project.
+ *      on a reactivated Supabase project, including the Preview request-safety migration.
  *   4. RevenueCat's secret API key is set for the Edge Function's
  *      server-side entitlement check.
  *

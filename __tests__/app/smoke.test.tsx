@@ -19,6 +19,7 @@ const mockParams: Record<string, string> = {};
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn(), replace: jest.fn() },
   useLocalSearchParams: () => mockParams,
+  useFocusEffect: (callback: () => void) => jest.requireActual('react').useEffect(callback, [callback]),
 }));
 
 // A lightweight "does it render without throwing" pass over every screen
@@ -89,6 +90,8 @@ describe('Screen smoke tests', () => {
       </EntitlementProvider>,
     );
     expect(screen.getByText('Your Personalized Aesthetic Plan Is Ready.')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Purchases Unavailable' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Restore Purchases' })).toBeDisabled();
   });
 
   it('preselects the Annual plan and allows selecting Weekly instead', async () => {

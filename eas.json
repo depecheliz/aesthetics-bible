@@ -4,6 +4,14 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "closed-testing": {
+      "extends": "production",
+      "environment": "preview",
+      "distribution": "store",
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "closed-testing"
+      }
+    },
     "development": {
       "developmentClient": true,
       "distribution": "internal",

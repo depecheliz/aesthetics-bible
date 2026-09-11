@@ -1,185 +1,219 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { buildPreviewPrompt } from '../_shared/previewGoals.ts';
+import {
+  callPreviewProvider,
+  PreviewProviderError,
+  validateProviderConfig,
+} from '../_shared/previewProvider.ts';
 
-// AI Preview generation. NOT YET DEPLOYED — see BUILD_STATUS.md.
-//
-// This function is a real skeleton, not a mock: authentication, entitlement
-// verification, and quota enforcement below are fully implemented and
-// meant to run as-is. The one deliberately unfinished piece is
-// `callProvider()`, which throws NotConfigured until:
-//   1. benchmarks/image-providers/ has been run and a provider chosen, and
-//   2. that provider's identifier + its secret API key are set as this
-//      function's environment secrets (`supabase secrets set ...`).
-// Do not hardcode a specific provider (e.g. FLUX) here before that
-// decision is made — see PRODUCT_SPEC.md / project decisions on this.
-//
-// Request body: { sourceStoragePath: string, visualizationGoal: string, intensity: 'subtle'|'moderate'|'enhanced' }
-// Response: { generationId: string, resultStoragePath: string } on success,
-// or { error: string, code: string } with an appropriate status on failure.
-// A failure NEVER inserts a preview_generations row — quota is only
-// consumed by a row that exists, and a row only exists after success.
-
-type PreviewIntensity = "subtle" | "moderate" | "enhanced";
-
-type GenerateRequest = {
-  sourceStoragePath: string;
-  visualizationGoal: string;
-  intensity: PreviewIntensity;
+const cors = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
-
-const MONTHLY_ALLOWANCE = 10;
-
-// Every provider adapter must implement this shape. See
-// benchmarks/image-providers/providers.js for the three candidates already
-// researched (cost + identity-preservation notes) — that harness informs
-// which one is wired in here, it does not predetermine it.
-type ProviderResult = { resultBytes: Uint8Array; providerId: string; costUsd: number };
-
-async function callProvider(_sourceBytes: Uint8Array, _prompt: string): Promise<ProviderResult> {
-  // Intentionally unimplemented. Wiring a specific model in here before the
-  // benchmark has run and a provider is chosen is exactly the kind of
-  // premature commitment this project decided against.
-  throw new NotConfiguredError(
-    "AI Preview's provider has not been selected yet (benchmark pending). No generation can run.",
-  );
-}
-
-class NotConfiguredError extends Error {}
-
-function jsonResponse(body: unknown, status: number) {
-  return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...cors, 'Content-Type': 'application/json' },
+  });
 }
 
 Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+  if (req.method !== 'POST')
+    return json({ error: 'Method not allowed.', code: 'bad_request' }, 405);
+  let release: (() => Promise<void>) | undefined;
+  let cleanup: (() => Promise<void>) | undefined;
+  let committed = false;
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return jsonResponse({ error: "Missing authorization", code: "unauthenticated" }, 401);
-    }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const revenueCatSecretKey = Deno.env.get("REVENUECAT_SECRET_API_KEY");
-
-    // Resolve the caller's identity from their own verified JWT — never
-    // trust a client-supplied user id.
-    const callerClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
+    const authorization = req.headers.get('Authorization');
+    if (!authorization) return json({ error: 'Sign in required.', code: 'unauthenticated' }, 401);
+    const url = Deno.env.get('SUPABASE_URL')!;
+    const caller = createClient(url, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      global: { headers: { Authorization: authorization } },
     });
-    const { data: userData, error: userError } = await callerClient.auth.getUser();
-    if (userError || !userData?.user) {
-      return jsonResponse({ error: "Invalid session", code: "unauthenticated" }, 401);
+    const { data: auth, error: authError } = await caller.auth.getUser();
+    if (authError || !auth.user)
+      return json({ error: 'Please sign in again.', code: 'unauthenticated' }, 401);
+    const userId = auth.user.id;
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return json({ error: 'Invalid request.', code: 'bad_request' }, 400);
     }
-    const userId = userData.user.id;
-
-    // Entitlement check: verify against RevenueCat's server API using the
-    // secret key, not the client's own claimed entitlement. RevenueCat's
-    // app_user_id is the Supabase user id after identifyRevenueCatUser()
-    // has run on sign-in (see lib/services/revenueCatBilling.ts).
-    if (!revenueCatSecretKey) {
-      return jsonResponse(
-        { error: "RevenueCat is not configured on the server yet.", code: "billing_not_configured" },
-        500,
+    const sourcePath = body?.sourceStoragePath;
+    if (
+      typeof sourcePath !== 'string' ||
+      !sourcePath.startsWith(userId + '/') ||
+      !/^[a-f0-9-]{36}[.]jpg$/.test(sourcePath.slice(userId.length + 1))
+    ) {
+      return json({ error: 'Invalid source path.', code: 'bad_request' }, 400);
+    }
+    let prompt: string;
+    try {
+      prompt = buildPreviewPrompt(body.visualizationGoal, body.intensity);
+    } catch {
+      return json(
+        { error: 'Choose a supported Preview goal and intensity.', code: 'bad_request' },
+        400,
       );
     }
-    const entitlementRes = await fetch(`https://api.revenuecat.com/v1/subscribers/${userId}`, {
-      headers: { Authorization: `Bearer ${revenueCatSecretKey}` },
-    });
-    if (!entitlementRes.ok) {
-      return jsonResponse({ error: "Could not verify entitlement.", code: "entitlement_check_failed" }, 502);
-    }
-    const entitlementData = await entitlementRes.json();
-    const isPremium = Boolean(entitlementData?.subscriber?.entitlements?.premium?.expires_date === null
-      || (entitlementData?.subscriber?.entitlements?.premium?.expires_date
-        && new Date(entitlementData.subscriber.entitlements.premium.expires_date) > new Date()));
-    if (!isPremium) {
-      return jsonResponse({ error: "Premium subscription required.", code: "not_entitled" }, 403);
-    }
+    const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    const { data: previous, error: previousError } = await admin
+      .from('preview_generations')
+      .select('id,result_storage_path,deleted_at')
+      .eq('user_id', userId)
+      .eq('source_storage_path', sourcePath)
+      .maybeSingle();
+    if (previousError)
+      return json({ error: 'Could not check saved previews.', code: 'history_failed' }, 502);
+    if (previous?.deleted_at)
+      return json({ error: 'This preview has been deleted.', code: 'deleted' }, 410);
+    // Recover a paid, owned result without requiring another credit or provider call.
+    if (previous)
+      return json({ generationId: previous.id, resultStoragePath: previous.result_storage_path });
+    const config = {
+      model: Deno.env.get('PREVIEW_REPLICATE_MODEL'),
+      token: Deno.env.get('REPLICATE_API_TOKEN'),
+    };
+    validateProviderConfig(config);
 
-    // Quota check: only successful past generations count (see migration
-    // comment) — a failed attempt never reaches this function again with
-    // quota already spent.
-    const adminClient = createClient(supabaseUrl, serviceRoleKey);
-    const { data: usedCount, error: quotaError } = await callerClient.rpc(
-      "my_preview_generations_this_month",
-    );
-    if (quotaError) {
-      return jsonResponse({ error: "Could not verify quota.", code: "quota_check_failed" }, 502);
+    // Existing entitlement boundary preserved. Agent #4 owns billing changes.
+    const revenueCatSecretKey = Deno.env.get('REVENUECAT_SECRET_API_KEY');
+    if (!revenueCatSecretKey)
+      return json(
+        { error: 'Preview access is not configured.', code: 'billing_not_configured' },
+        503,
+      );
+    const entitlementRes = await fetch('https://api.revenuecat.com/v1/subscribers/' + userId, {
+      headers: { Authorization: 'Bearer ' + revenueCatSecretKey },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!entitlementRes.ok)
+      return json({ error: 'Could not verify access.', code: 'entitlement_check_failed' }, 502);
+    const entitlementData = await entitlementRes.json();
+    const expiry = entitlementData?.subscriber?.entitlements?.premium?.expires_date;
+    if (!(expiry === null || (typeof expiry === 'string' && new Date(expiry) > new Date()))) {
+      return json({ error: 'Premium access required.', code: 'not_entitled' }, 403);
     }
-    if ((usedCount ?? 0) >= MONTHLY_ALLOWANCE) {
-      return jsonResponse(
-        { error: `You've used all ${MONTHLY_ALLOWANCE} Preview generations included this month.`, code: "quota_exceeded" },
+    const token = crypto.randomUUID();
+    const { data: lease, error: leaseError } = await admin.rpc('acquire_preview_request', {
+      p_user_id: userId,
+      p_token: token,
+    });
+    if (leaseError)
+      return json(
+        { error: 'Could not verify Preview allowance.', code: 'quota_check_failed' },
+        502,
+      );
+    if (lease !== 'allowed')
+      return json(
+        {
+          error: 'Preview allowance is used or another request is processing.',
+          code: lease === 'quota_exceeded' ? lease : 'request_in_progress',
+        },
         429,
       );
+    release = async () => {
+      // Brief cooldown also limits repeated failed requests without consuming quota.
+      await admin
+        .from('preview_request_locks')
+        .update({ expires_at: new Date(Date.now() + 15_000).toISOString() })
+        .eq('user_id', userId)
+        .eq('token', token);
+    };
+    // Re-check after acquiring the lease: a prior call may have committed since the first lookup.
+    const { data: recovered, error: recoveredError } = await admin
+      .from('preview_generations')
+      .select('id,result_storage_path,deleted_at')
+      .eq('user_id', userId)
+      .eq('source_storage_path', sourcePath)
+      .maybeSingle();
+    if (recoveredError)
+      return json({ error: 'Could not check saved previews.', code: 'history_failed' }, 502);
+    if (recovered?.deleted_at)
+      return json({ error: 'This preview has been deleted.', code: 'deleted' }, 410);
+    if (recovered)
+      return json({ generationId: recovered.id, resultStoragePath: recovered.result_storage_path });
+    cleanup = async () => {
+      await admin.storage.from('preview-sources').remove([sourcePath]);
+    };
+    const { data: sourceFile, error: sourceError } = await admin.storage
+      .from('preview-sources')
+      .download(sourcePath);
+    if (sourceError || !sourceFile)
+      return json({ error: 'Could not read your photo.', code: 'source_read_failed' }, 502);
+    const sourceBytes = new Uint8Array(await sourceFile.arrayBuffer());
+    if (
+      sourceFile.size > 20 * 1024 * 1024 ||
+      sourceBytes[0] !== 255 ||
+      sourceBytes[1] !== 216 ||
+      sourceBytes[2] !== 255
+    ) {
+      return json({ error: 'Choose a JPEG photo under 20 MB.', code: 'bad_photo' }, 400);
     }
-
-    const body = (await req.json()) as GenerateRequest;
-    if (!body.sourceStoragePath || !body.visualizationGoal || !body.intensity) {
-      return jsonResponse({ error: "Missing required fields.", code: "bad_request" }, 400);
-    }
-    // Defense in depth: the storage path itself is already RLS-scoped to
-    // this user (see the Storage migration), but re-check the prefix here
-    // too before ever reading the file.
-    if (!body.sourceStoragePath.startsWith(`${userId}/`)) {
-      return jsonResponse({ error: "Invalid source path.", code: "bad_request" }, 400);
-    }
-
-    const { data: sourceFile, error: downloadError } = await adminClient.storage
-      .from("preview-sources")
-      .download(body.sourceStoragePath);
-    if (downloadError || !sourceFile) {
-      return jsonResponse({ error: "Could not read the uploaded photo.", code: "source_read_failed" }, 500);
-    }
-
-    let providerResult: ProviderResult;
-    try {
-      const sourceBytes = new Uint8Array(await sourceFile.arrayBuffer());
-      providerResult = await callProvider(sourceBytes, body.visualizationGoal);
-    } catch (err) {
-      const notConfigured = err instanceof NotConfiguredError;
-      // A failed generation is reported honestly and NEVER writes a
-      // preview_generations row — quota is not consumed.
-      return jsonResponse(
-        {
-          error: notConfigured
-            ? "AI Preview isn't live yet — check back soon."
-            : "Your visualization couldn't be generated. Please try again.",
-          code: notConfigured ? "provider_not_configured" : "generation_failed",
-        },
-        notConfigured ? 501 : 502,
-      );
-    }
-
-    const resultPath = `${userId}/${crypto.randomUUID()}.jpg`;
-    const { error: uploadError } = await adminClient.storage
-      .from("preview-results")
-      .upload(resultPath, providerResult.resultBytes, { contentType: "image/jpeg" });
-    if (uploadError) {
-      return jsonResponse({ error: "Could not save your visualization.", code: "result_write_failed" }, 500);
-    }
-
-    // Only now — after a real provider success and a real stored result —
-    // does a row get written, which is the only thing that consumes quota.
-    const { data: inserted, error: insertError } = await adminClient
-      .from("preview_generations")
+    const { data: signed, error: signError } = await admin.storage
+      .from('preview-sources')
+      .createSignedUrl(sourcePath, 180);
+    if (signError || !signed)
+      return json({ error: 'Could not prepare your photo.', code: 'source_read_failed' }, 502);
+    const result = await callPreviewProvider(signed.signedUrl, prompt, config);
+    const resultPath =
+      userId +
+      '/' +
+      crypto.randomUUID() +
+      (result.contentType === 'image/png'
+        ? '.png'
+        : result.contentType === 'image/webp'
+          ? '.webp'
+          : '.jpg');
+    const { error: uploadError } = await admin.storage
+      .from('preview-results')
+      .upload(resultPath, result.resultBytes, { contentType: result.contentType });
+    if (uploadError)
+      return json({ error: 'Could not save the image.', code: 'result_write_failed' }, 502);
+    committed = true;
+    const { data: inserted, error: insertError } = await admin
+      .from('preview_generations')
       .insert({
         user_id: userId,
-        provider: providerResult.providerId,
-        source_storage_path: body.sourceStoragePath,
+        provider: result.providerId,
+        source_storage_path: sourcePath,
         result_storage_path: resultPath,
         visualization_goal: body.visualizationGoal,
         intensity: body.intensity,
-        cost_usd: providerResult.costUsd,
+        cost_usd: result.costUsd,
       })
-      .select("id")
+      .select('id')
       .single();
-    if (insertError || !inserted) {
-      return jsonResponse({ error: "Could not record your generation.", code: "record_failed" }, 500);
-    }
-
-    return jsonResponse({ generationId: inserted.id, resultStoragePath: resultPath }, 200);
-  } catch (err) {
-    return jsonResponse({ error: String(err), code: "unexpected_error" }, 500);
+    // A DB transport failure has an uncertain commit outcome. Retain files for recovery;
+    // never remove a result that might already be recorded as a successful generation.
+    if (insertError || !inserted)
+      return json(
+        {
+          error: 'Could not confirm saving. Refresh saved previews or retry.',
+          code: 'record_failed',
+        },
+        502,
+      );
+    return json({ generationId: inserted.id, resultStoragePath: resultPath });
+  } catch (error) {
+    if (error instanceof PreviewProviderError)
+      return json(
+        { error: error.message, code: error.code },
+        error.code === 'provider_not_configured' ? 503 : 502,
+      );
+    return json(
+      {
+        error: 'Preview could not finish. Please retry or refresh saved previews.',
+        code: 'unexpected_error',
+      },
+      500,
+    );
+  } finally {
+    if (!committed) await cleanup?.().catch(() => undefined);
+    await release?.().catch(() => undefined);
   }
 });

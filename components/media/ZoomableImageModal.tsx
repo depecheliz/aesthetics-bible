@@ -9,6 +9,7 @@ import {
   View,
   type ImageSourcePropType,
 } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { colors, spacing } from '../../constants/theme';
 
@@ -138,31 +139,35 @@ export function ZoomableImageModal({ visible, source, label, onClose }: Zoomable
       onRequestClose={handleClose}
       testID="zoomable-image-modal"
     >
-      <View style={styles.container}>
-        <View style={styles.imageWrap} {...panResponder.panHandlers}>
-          <Animated.Image
-            testID="zoomable-image-modal-image"
-            source={source}
-            resizeMode="contain"
-            accessible
-            accessibilityLabel={label ?? 'Diagram'}
-            style={[
-              styles.image,
-              { transform: [{ translateX: translate.x }, { translateY: translate.y }, { scale }] },
-            ]}
-          />
-        </View>
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.viewport}>
+            <View style={styles.imageWrap} {...panResponder.panHandlers}>
+              <Animated.Image
+                testID="zoomable-image-modal-image"
+                source={source}
+                resizeMode="contain"
+                accessible
+                accessibilityLabel={label ?? 'Diagram'}
+                style={[
+                  styles.image,
+                  { transform: [{ translateX: translate.x }, { translateY: translate.y }, { scale }] },
+                ]}
+              />
+            </View>
 
-        <Pressable
-          onPress={handleClose}
-          style={styles.closeButton}
-          accessibilityRole="button"
-          accessibilityLabel="Close image viewer"
-          hitSlop={12}
-        >
-          <Feather name="x" size={22} color={colors.textPrimary} />
-        </Pressable>
-      </View>
+            <Pressable
+              onPress={handleClose}
+              style={styles.closeButton}
+              accessibilityRole="button"
+              accessibilityLabel="Close image viewer"
+              hitSlop={12}
+            >
+              <Feather name="x" size={22} color={colors.textPrimary} />
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      </SafeAreaProvider>
     </Modal>
   );
 }
@@ -171,8 +176,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
+  },
+  viewport: {
+    flex: 1,
+    overflow: 'hidden',
   },
   imageWrap: {
     width: '100%',

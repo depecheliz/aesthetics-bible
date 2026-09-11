@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
@@ -13,6 +14,7 @@ import { colors, spacing } from '../../constants/theme';
 const MIN_PASSWORD_LENGTH = 8;
 
 export default function SignUpScreen() {
+  const insets = useSafeAreaInsets();
   const { signUp } = useAuth();
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const [email, setEmail] = useState('');
@@ -46,8 +48,8 @@ export default function SignUpScreen() {
 
   return (
     <Screen>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={insets.top}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <ScreenHeader />
 
           <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>

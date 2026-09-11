@@ -11,6 +11,7 @@ import { PlanPreviewMockup } from '../components/media/PlanPreviewMockup';
 import { Monogram } from '../components/brand/Monogram';
 import { useEntitlement } from '../lib/state/EntitlementContext';
 import { analytics } from '../lib/services/analyticsClient';
+import { isRevenueCatConfigured } from '../lib/services/revenueCatBilling';
 import { colors, radius, spacing } from '../constants/theme';
 
 // GLOW is intentionally not part of this list for V1 — it isn't built, and
@@ -28,8 +29,24 @@ const premiumModules: { name: string; description: string }[] = [
 type PlanId = 'weekly' | 'annual';
 
 export default function PaywallScreen() {
-  const { isPremium, isLoading, error, purchaseWeekly, purchaseAnnual, restorePurchases } = useEntitlement();
+  const {
+    isPremium,
+    isLoading,
+    error,
+    restoreMessage,
+    offering,
+    purchaseWeekly,
+    purchaseAnnual,
+    restorePurchases,
+  } = useEntitlement();
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('annual');
+
+  // Live RevenueCat pricing when the offering has loaded; otherwise fall
+  // back to the launch-test prices from CLAUDE.md so the paywall never
+  // shows a blank price while offerings load or in an unconfigured build.
+  const annualPriceString = offering?.annual?.product.priceString ?? '$99';
+  const annualPerWeekString = offering?.annual?.product.pricePerWeekString ?? '$1.90';
+  const weeklyPriceString = offering?.weekly?.product.priceString ?? '$11.99';
 
   useEffect(() => {
     analytics.track('paywall_viewed');
@@ -111,13 +128,13 @@ export default function PaywallScreen() {
                   YOUR AESTELLA COMPANION
                 </ThemedText>
                 <ThemedText variant="statHero" color={colors.textOnIvory}>
-                  $99
+                  {annualPriceString}
                 </ThemedText>
                 <ThemedText variant="eyebrow" color={colors.textOnIvory} style={styles.priceUnit}>
                   PER YEAR
                 </ThemedText>
                 <ThemedText variant="caption" color={colors.textMuted} style={styles.priceSubtext}>
-                  Just $1.90/week, billed annually
+                  Just {annualPerWeekString}/week, billed annually
                 </ThemedText>
                 <ThemedText variant="caption" color={colors.textMuted}>
                   Plan. Preview. Track. Keep Aestella with you throughout your aesthetics journey.
@@ -142,7 +159,7 @@ export default function PaywallScreen() {
                   EXPLORE
                 </ThemedText>
                 <ThemedText variant="statHero" color={colors.textOnIvory}>
-                  $11.99
+                  {weeklyPriceString}
                 </ThemedText>
                 <ThemedText variant="eyebrow" color={colors.textOnIvory} style={styles.priceUnit}>
                   FOR 1 WEEK
@@ -151,17 +168,25 @@ export default function PaywallScreen() {
                   For exploring your personalized plan and possibilities.
                 </ThemedText>
                 <ThemedText variant="caption" color={colors.textOnIvory} style={styles.priceCompare}>
-                  That&rsquo;s $11.99 every week — the annual plan works out to just $1.90/week.
+                  That&rsquo;s {weeklyPriceString} every week — the annual plan works out to just{' '}
+                  {annualPerWeekString}/week.
                 </ThemedText>
               </Card>
             </Pressable>
 
             <Button
-              label="Unlock My Aestella Plan"
+              label={isRevenueCatConfigured ? 'Unlock My Aestella Plan' : 'Purchases Unavailable'}
+              disabled={!isRevenueCatConfigured}
               onPress={handleUnlock}
               loading={isLoading}
               style={styles.unlockButton}
             />
+
+            {!isRevenueCatConfigured && (
+              <ThemedText variant="caption" color={colors.textSecondary} style={styles.errorText}>
+                Purchases are unavailable in this build. You can continue exploring the free features.
+              </ThemedText>
+            )}
 
             {error && (
               <ThemedText variant="caption" color={colors.accent} style={styles.errorText}>
@@ -171,11 +196,18 @@ export default function PaywallScreen() {
 
             <Button
               label="Restore Purchases"
+              disabled={!isRevenueCatConfigured}
               variant="ghost"
               onPress={restorePurchases}
               loading={isLoading}
               style={styles.restoreButton}
             />
+
+            {restoreMessage && (
+              <ThemedText variant="caption" color={colors.textSecondary} style={styles.errorText}>
+                {restoreMessage}
+              </ThemedText>
+            )}
           </>
         )}
 

@@ -7,8 +7,12 @@ import { randomId } from '../utils/randomId';
  * policies (see the 20260906000001 migration) enforce that a user can only
  * read/write inside their own folder, so this is real, not advisory.
  */
-export async function uploadPreviewSourcePhoto(userId: string, localUri: string): Promise<string> {
-  const path = `${userId}/${randomId()}.jpg`;
+export async function uploadPreviewSourcePhoto(
+  userId: string,
+  localUri: string,
+  requestId = randomId(),
+): Promise<string> {
+  const path = `${userId}/${requestId}.jpg`;
 
   const response = await fetch(localUri);
   const blob = await response.blob();
@@ -19,8 +23,8 @@ export async function uploadPreviewSourcePhoto(userId: string, localUri: string)
     upsert: false,
   });
 
-  if (error) {
-    throw new Error(`Could not upload your photo: ${error.message}`);
+  if (error && !('statusCode' in error && String(error.statusCode) === '409')) {
+    throw new Error('Could not upload your photo. Check your connection and try again.');
   }
 
   return path;

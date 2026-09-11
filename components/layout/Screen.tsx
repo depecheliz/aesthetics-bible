@@ -6,9 +6,9 @@ type ScreenProps = ViewProps & {
   edges?: ('top' | 'bottom' | 'left' | 'right')[];
 };
 
-export function Screen({ children, style, edges = ['top', 'bottom'], ...rest }: ScreenProps) {
+export function Screen({ children, style, edges = ['top', 'bottom', 'left', 'right'], ...rest }: ScreenProps) {
   return (
-    <SafeAreaView style={styles.safeArea} edges={edges}>
+    <SafeAreaView style={styles.safeArea} edges={Array.from(new Set([...edges, 'left', 'right'] as const))}>
       <View style={[styles.content, style]} {...rest}>
         {children}
       </View>

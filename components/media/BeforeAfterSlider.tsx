@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import {
   GestureResponderEvent,
   Image,
+  ActivityIndicator,
   PanResponder,
   StyleSheet,
   View,
@@ -33,6 +34,7 @@ type BeforeAfterSliderProps = {
   /** Default 4/5, matching the app's portrait image variant elsewhere. */
   aspectRatio?: number;
   style?: ViewStyle;
+  onImageError?: () => void;
 };
 
 const HANDLE_SIZE = 32;
@@ -53,16 +55,23 @@ export function BeforeAfterSlider({
   afterLabel = 'AFTER',
   aspectRatio = 4 / 5,
   style,
+  onImageError,
 }: BeforeAfterSliderProps) {
+  const [loaded, setLoaded] = useState({ before: false, after: false });
   const [containerWidth, setContainerWidth] = useState(0);
   const [dividerX, setDividerX] = useState<number | null>(null);
   const widthRef = useRef(0);
 
   const handleLayout = useCallback((event: LayoutChangeEvent) => {
     const { width } = event.nativeEvent.layout;
+    const previousWidth = widthRef.current;
     widthRef.current = width;
     setContainerWidth(width);
-    setDividerX((current) => current ?? width / 2);
+    setDividerX((current) =>
+      current === null || !previousWidth
+        ? width / 2
+        : clampToWidth((current / previousWidth) * width, width),
+    );
   }, []);
 
   const clamp = useCallback((x: number) => clampToWidth(x, widthRef.current), []);
@@ -80,8 +89,11 @@ export function BeforeAfterSlider({
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: (evt: GestureResponderEvent) => setDividerX(clamp(evt.nativeEvent.locationX)),
-      onPanResponderMove: (evt: GestureResponderEvent) => setDividerX(clamp(evt.nativeEvent.locationX)),
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderGrant: (evt: GestureResponderEvent) =>
+        setDividerX(clamp(evt.nativeEvent.locationX)),
+      onPanResponderMove: (evt: GestureResponderEvent) =>
+        setDividerX(clamp(evt.nativeEvent.locationX)),
     }),
   );
 
@@ -95,6 +107,15 @@ export function BeforeAfterSlider({
       {...panResponder.panHandlers}
       accessibilityRole="adjustable"
       accessibilityLabel="Before and after comparison slider"
+      accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+      onAccessibilityAction={(event) =>
+        setDividerX(
+          clamp(
+            resolvedDividerX +
+              ((event.nativeEvent.actionName === 'increment' ? 1 : -1) * containerWidth) / 10,
+          ),
+        )
+      }
       accessibilityValue={{
         min: 0,
         max: 100,
@@ -104,30 +125,48 @@ export function BeforeAfterSlider({
       {containerWidth > 0 && (
         <>
           {/* Before — full image, bottom layer */}
-          <Image source={beforeImage} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          <Image
+            source={beforeImage}
+            style={StyleSheet.absoluteFill}
+            resizeMode="contain"
+            onLoad={() => setLoaded((value) => ({ ...value, before: true }))}
+            onError={onImageError}
+          />
 
           {/* After — top layer, clipped to the divider position */}
-          <View style={[styles.afterClip, { width: resolvedDividerX }]}>
+          <View pointerEvents="none" style={[styles.afterClip, { width: resolvedDividerX }]}>
             <Image
               source={afterImage}
               style={[StyleSheet.absoluteFill, { width: containerWidth }]}
-              resizeMode="cover"
+              resizeMode="contain"
+              onLoad={() => setLoaded((value) => ({ ...value, after: true }))}
+              onError={onImageError}
             />
           </View>
 
-          <View style={[styles.divider, { left: resolvedDividerX - 1 }]} />
-          <View style={[styles.handle, { left: resolvedDividerX - HANDLE_SIZE / 2 }]} />
+          <View pointerEvents="none" style={[styles.divider, { left: resolvedDividerX - 1 }]} />
+          <View
+            pointerEvents="none"
+            style={[styles.handle, { left: resolvedDividerX - HANDLE_SIZE / 2 }]}
+          />
 
-          <View style={styles.beforeLabelChip}>
+          <View pointerEvents="none" style={styles.beforeLabelChip}>
             <ThemedText variant="caption" color={colors.textPrimary} style={styles.labelText}>
               {beforeLabel}
             </ThemedText>
           </View>
-          <View style={styles.afterLabelChip}>
+          <View pointerEvents="none" style={styles.afterLabelChip}>
             <ThemedText variant="caption" color={colors.textPrimary} style={styles.labelText}>
               {afterLabel}
             </ThemedText>
           </View>
+          {(!loaded.before || !loaded.after) && (
+            <ActivityIndicator
+              pointerEvents="none"
+              style={StyleSheet.absoluteFill}
+              accessibilityLabel="Loading comparison"
+            />
+          )}
         </>
       )}
     </View>
@@ -168,7 +207,7 @@ const styles = StyleSheet.create({
   },
   beforeLabelChip: {
     position: 'absolute',
-    left: spacing.sm,
+    right: spacing.sm,
     bottom: spacing.sm,
     backgroundColor: colors.overlay,
     borderRadius: radius.sm,
@@ -177,7 +216,7 @@ const styles = StyleSheet.create({
   },
   afterLabelChip: {
     position: 'absolute',
-    right: spacing.sm,
+    left: spacing.sm,
     bottom: spacing.sm,
     backgroundColor: colors.overlay,
     borderRadius: radius.sm,

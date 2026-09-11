@@ -63,7 +63,7 @@ export function Button({
                 style={styles.icon}
               />
             )}
-            <ThemedText variant="button" color={textColor[variant]}>
+            <ThemedText variant="button" color={textColor[variant]} style={styles.label}>
               {label.toUpperCase()}
             </ThemedText>
           </>
@@ -81,6 +81,7 @@ const textColor: Record<ButtonVariant, string> = {
 
 const styles = StyleSheet.create({
   base: {
+    minHeight: 48,
     paddingVertical: spacing.sm + 2,
     paddingHorizontal: spacing.lg,
     borderRadius: radius.sm,
@@ -91,10 +92,17 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   content: {
+    maxWidth: '100%',
+    justifyContent: 'center',
     flexDirection: 'row',
     alignItems: 'center',
   },
+  label: {
+    flexShrink: 1,
+    textAlign: 'center',
+  },
   icon: {
+    flexShrink: 0,
     marginRight: spacing.xs,
   },
   pressed: {

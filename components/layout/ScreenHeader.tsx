@@ -42,6 +42,7 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     width: 36,
+    flexShrink: 0,
     height: 36,
     borderRadius: 18,
     alignItems: 'center',
@@ -50,6 +51,7 @@ const styles = StyleSheet.create({
   },
   title: {
     marginLeft: spacing.sm,
+    flexShrink: 1,
   },
   spacer: {
     flex: 1,

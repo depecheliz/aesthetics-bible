@@ -1,13 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Screen } from '../../components/layout/Screen';
 import { ThemedText } from '../../components/typography/ThemedText';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Rule } from '../../components/ui/Rule';
 import { EditorialImage } from '../../components/media/EditorialImage';
-import { BeforeAfterSlider } from '../../components/media/BeforeAfterSlider';
+import { PreviewResult } from '../../components/media/PreviewResult';
+import { randomId } from '../../lib/utils/randomId';
+import { previewGoalInstructions } from '../../supabase/functions/_shared/previewGoals';
 import { campaignImages } from '../../assets/brand/campaign';
 import { useEntitlement } from '../../lib/state/EntitlementContext';
 import { useOptionalAuth } from '../../lib/state/AuthContext';
@@ -17,8 +19,15 @@ import {
   requestPreviewGeneration,
   getPreviewGenerationsUsedThisMonth,
   reportPreviewGeneration,
+  listSavedPreviews,
+  deleteSavedPreview,
+  type SavedPreview,
+  type PreviewGenerationRequest,
 } from '../../lib/services/previewGeneration';
-import { isPreviewGenerationLive, previewNotLiveMessage } from '../../lib/services/previewProviderStatus';
+import {
+  isPreviewGenerationLive,
+  previewNotLiveMessage,
+} from '../../lib/services/previewProviderStatus';
 import { checkPreviewEligibility } from '../../src/domain/previewEligibility';
 import { colors, radius, spacing } from '../../constants/theme';
 
@@ -29,16 +38,18 @@ const VISUALIZATION_ASPECT_RATIO = 853 / 1844;
 
 type Mode = 'preview' | 'glow';
 
-const previewGoals = [
-  'Softer-Looking Lines',
-  'Brighter Complexion',
-  'More Even Tone',
-  'Subtle Lip-Volume Look',
-  'Jawline-Definition Look',
-  'Refreshed Look',
-];
+const previewGoals = Object.keys(previewGoalInstructions);
 
-const glowPresets = ['Natural Me', 'Polished', 'Soft Glam', 'Golden Hour', 'Studio', 'Fresh Face', 'Date Night', 'Vacation Glow'];
+const glowPresets = [
+  'Natural Me',
+  'Polished',
+  'Soft Glam',
+  'Golden Hour',
+  'Studio',
+  'Fresh Face',
+  'Date Night',
+  'Vacation Glow',
+];
 
 const myNaturalLookPrefs = [
   'Gentle skin polish',
@@ -82,7 +93,7 @@ function IntensitySlider({ value, onChange }: { value: number; onChange: (v: num
 type GenerationState =
   | { phase: 'idle' }
   | { phase: 'working' }
-  | { phase: 'result'; generationId: string; resultStoragePath: string }
+  | { phase: 'result'; preview: SavedPreview }
   | { phase: 'error'; message: string };
 
 export default function PreviewScreen() {
@@ -93,82 +104,158 @@ export default function PreviewScreen() {
   const [intensity, setIntensity] = useState(1);
   const [generation, setGeneration] = useState<GenerationState>({ phase: 'idle' });
   const [usedThisMonth, setUsedThisMonth] = useState(0);
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [history, setHistory] = useState<SavedPreview[]>([]);
+  const [notice, setNotice] = useState('');
+  const pending = useRef<PreviewGenerationRequest | null>(null);
+  const active = useRef(false);
+  const sessionEpoch = useRef(0);
+  const busy = useRef(false);
+  const abort = useRef<AbortController | null>(null);
 
   const { isPremium } = useEntitlement();
   const auth = useOptionalAuth();
   const userId = auth?.user?.id ?? null;
 
-  useEffect(() => {
-    if (isPremium && isPreviewGenerationLive) {
-      getPreviewGenerationsUsedThisMonth().then(setUsedThisMonth);
+  const refreshHistory = useCallback(async () => {
+    if (!userId) return;
+    const epoch = sessionEpoch.current;
+    try {
+      const [saved, count] = await Promise.all([
+        listSavedPreviews(),
+        getPreviewGenerationsUsedThisMonth(),
+      ]);
+      if (active.current && epoch === sessionEpoch.current) {
+        setHistory(saved);
+        setUsedThisMonth(count);
+        setNotice('');
+      }
+    } catch {
+      if (active.current && epoch === sessionEpoch.current)
+        setNotice('Could not refresh saved previews. Please try again.');
     }
-  }, [isPremium]);
+  }, [userId]);
 
-  const eligibility = checkPreviewEligibility({ isPremium, isLive: isPreviewGenerationLive, usedThisMonth });
+  useFocusEffect(
+    useCallback(() => {
+      active.current = true;
+      sessionEpoch.current += 1;
+      setGeneration({ phase: 'idle' });
+      setPhoto(null);
+      setHistory([]);
+      setUsedThisMonth(0);
+      setNotice('');
+      pending.current = null;
+      if (isPreviewGenerationLive) void refreshHistory();
+      return () => {
+        active.current = false;
+        sessionEpoch.current += 1;
+        abort.current?.abort();
+        busy.current = false;
+        pending.current = null;
+      };
+    }, [refreshHistory]),
+  );
 
+  const eligibility = checkPreviewEligibility({
+    isPremium,
+    isLive: isPreviewGenerationLive,
+    usedThisMonth,
+  });
+  const choosePhoto = async () => {
+    if (busy.current) return;
+    const epoch = sessionEpoch.current;
+    try {
+      const picked = await pickAndCompressPhoto();
+      if (!active.current || epoch !== sessionEpoch.current) return;
+      if (picked.status === 'picked') {
+        setPhoto(picked.photo.uri);
+        pending.current = null;
+        setGeneration({ phase: 'idle' });
+      } else if (picked.status === 'permission_denied')
+        setNotice('Photo library access is needed to choose a photo.');
+    } catch {
+      if (active.current) setNotice('Could not open this photo. Please try another image.');
+    }
+  };
   const handleTryPreview = useCallback(async () => {
-    if (!isPremium) {
-      router.push('/paywall');
+    if (busy.current) return;
+    if (!userId) {
+      setGeneration({ phase: 'error', message: 'Please sign in to use AI Preview.' });
       return;
     }
     if (!isPreviewGenerationLive) {
       setGeneration({ phase: 'error', message: previewNotLiveMessage });
       return;
     }
-    if (eligibility.allowed === false && eligibility.reason === 'quota_exceeded') {
-      setGeneration({
-        phase: 'error',
-        message: "You've used all 10 Preview generations included this month. Your allowance renews next month.",
-      });
+    if (!isPremium) {
+      router.push('/paywall');
       return;
     }
-    if (!userId) {
-      setGeneration({ phase: 'error', message: 'Please sign in to use AI Preview.' });
+    if (!photo) {
+      setGeneration({ phase: 'error', message: 'Choose a photo first.' });
       return;
     }
-
-    analytics.track('preview_started');
+    if (!pending.current && !eligibility.allowed) {
+      setGeneration({ phase: 'error', message: 'You have used your monthly Preview allowance.' });
+      return;
+    }
+    const request =
+      pending.current ??
+      ({
+        userId,
+        requestId: randomId(),
+        sourcePhotoUri: photo,
+        visualizationGoal: selectedGoal,
+        intensity: intensity === 0 ? 'subtle' : intensity === 1 ? 'moderate' : 'enhanced',
+      } as PreviewGenerationRequest);
+    pending.current = request;
+    busy.current = true;
+    const controller = new AbortController();
+    abort.current = controller;
     setGeneration({ phase: 'working' });
-
-    const picked = await pickAndCompressPhoto();
-    if (picked.status === 'cancelled') {
-      setGeneration({ phase: 'idle' });
-      return;
-    }
-    if (picked.status === 'permission_denied') {
-      setGeneration({ phase: 'error', message: 'Photo library access is needed to try Preview.' });
-      return;
-    }
-
-    const outcome = await requestPreviewGeneration({
-      userId,
-      sourcePhotoUri: picked.photo.uri,
-      visualizationGoal: selectedGoal,
-      intensity: intensity === 0 ? 'subtle' : intensity === 1 ? 'moderate' : 'enhanced',
-    });
-
+    setNotice('');
+    analytics.track('preview_started');
+    const outcome = await requestPreviewGeneration(request, controller.signal);
+    if (!active.current || controller.signal.aborted || abort.current !== controller) return;
+    busy.current = false;
     if (outcome.status === 'failure') {
       analytics.track('preview_failed');
       setGeneration({ phase: 'error', message: outcome.message });
       return;
     }
-
     analytics.track('preview_generated');
-    setGeneration({ phase: 'result', generationId: outcome.generationId, resultStoragePath: outcome.resultStoragePath });
-    setUsedThisMonth((count) => count + 1);
-  }, [isPremium, eligibility, userId, selectedGoal, intensity]);
+    setGeneration({
+      phase: 'result',
+      preview: {
+        id: outcome.generationId,
+        result_storage_path: outcome.resultStoragePath,
+        source_storage_path: userId + '/' + request.requestId + '.jpg',
+        visualization_goal: request.visualizationGoal,
+        intensity: request.intensity,
+        created_at: new Date().toISOString(),
+      },
+    });
+    pending.current = null;
+    await refreshHistory();
+  }, [isPremium, eligibility, userId, selectedGoal, intensity, photo, refreshHistory]);
 
   const handleReport = useCallback(async () => {
     if (generation.phase !== 'result') return;
     try {
-      await reportPreviewGeneration(generation.generationId, 'user_flagged');
-      setGeneration({ phase: 'idle' });
+      await reportPreviewGeneration(generation.preview.id, 'user_flagged');
+      if (active.current) setNotice('Your report was submitted.');
     } catch {
-      // Report failure shouldn't trap the user — they can still leave the screen.
+      if (active.current) setNotice('Could not submit the report. Please retry.');
     }
   }, [generation]);
 
-  const tryButtonLabel = generation.phase === 'working' ? 'Generating…' : 'Try Preview';
+  const tryButtonLabel =
+    generation.phase === 'working'
+      ? 'Creating your personalized preview…'
+      : generation.phase === 'error'
+        ? 'Retry Preview'
+        : 'Generate Preview';
 
   return (
     <Screen edges={['top']}>
@@ -198,11 +285,30 @@ export default function PreviewScreen() {
 
             <EditorialImage
               variant="portrait"
-              uri={campaignImages.previewHeroCrop}
-              label="AI VISUALIZATION"
+              uri={photo ? { uri: photo } : campaignImages.previewHeroCrop}
+              label={photo ? 'YOUR PHOTO' : 'ILLUSTRATIVE EXAMPLE'}
               style={styles.heroImage}
+              noDefault
             />
 
+            <Button
+              label={photo ? 'Choose another photo' : 'Choose photo'}
+              icon="camera"
+              variant="secondary"
+              disabled={generation.phase === 'working'}
+              onPress={choosePhoto}
+            />
+            <ThemedText variant="caption">
+              Generate sends your photo securely to our image provider and saves the photo and
+              preview privately to your account. Use a photo you have permission to edit.
+            </ThemedText>
+            {!userId && (
+              <Button
+                label="Sign in for Preview"
+                variant="ghost"
+                onPress={() => router.push('/auth/sign-in')}
+              />
+            )}
             <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
               CHOOSE A LOOK
             </ThemedText>
@@ -212,13 +318,21 @@ export default function PreviewScreen() {
                 return (
                   <Pressable
                     key={goal}
-                    onPress={() => setSelectedGoal(goal)}
+                    disabled={generation.phase === 'working'}
+                    onPress={() => {
+                      setSelectedGoal(goal);
+                      pending.current = null;
+                      setGeneration({ phase: 'idle' });
+                    }}
                     accessibilityRole="button"
                     accessibilityState={{ selected }}
                     accessibilityLabel={goal}
                   >
                     <View style={[styles.goalChip, selected && styles.goalChipSelected]}>
-                      <ThemedText variant="caption" color={selected ? colors.textOnIvory : colors.textPrimary}>
+                      <ThemedText
+                        variant="caption"
+                        color={selected ? colors.textOnIvory : colors.textPrimary}
+                      >
                         {goal}
                       </ThemedText>
                     </View>
@@ -230,7 +344,16 @@ export default function PreviewScreen() {
             <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
               INTENSITY
             </ThemedText>
-            <IntensitySlider value={intensity} onChange={setIntensity} />
+            <IntensitySlider
+              value={intensity}
+              onChange={(value) => {
+                if (generation.phase !== 'working') {
+                  setIntensity(value);
+                  pending.current = null;
+                  setGeneration({ phase: 'idle' });
+                }
+              }}
+            />
 
             {isPremium && isPreviewGenerationLive && (
               <ThemedText variant="caption" color={colors.textSecondary} style={styles.quotaLabel}>
@@ -243,10 +366,38 @@ export default function PreviewScreen() {
               icon="camera"
               variant="secondary"
               loading={generation.phase === 'working'}
-              onPress={handleTryPreview}
+              onPress={() => {
+                void handleTryPreview();
+              }}
               style={styles.tryButton}
             />
 
+            {generation.phase === 'working' && (
+              <>
+                <ThemedText variant="caption">
+                  This can take up to two minutes. Your preview is saved only after generation
+                  succeeds.
+                </ThemedText>
+                <Button
+                  label="Stop waiting"
+                  variant="ghost"
+                  onPress={() => {
+                    abort.current?.abort();
+                    busy.current = false;
+                    setGeneration({
+                      phase: 'error',
+                      message:
+                        'Stopped waiting. A request already received by the server may finish and use one preview. Refresh saved previews or retry to recover it.',
+                    });
+                  }}
+                />
+              </>
+            )}
+            {!!notice && (
+              <ThemedText accessibilityRole="alert" variant="caption">
+                {notice}
+              </ThemedText>
+            )}
             {generation.phase === 'error' && (
               <ThemedText variant="caption" color={colors.accent} style={styles.statusText}>
                 {generation.message}
@@ -255,36 +406,67 @@ export default function PreviewScreen() {
 
             {generation.phase === 'result' && (
               <View style={styles.resultRow}>
-                {/* TEMPORARY PLACEHOLDER IMAGES: campaignImages.previewHero
-                    (before) and campaignImages.previewVisualization (after)
-                    stand in until the real photo the user uploaded and the
-                    real generated result (from Supabase Storage) are wired
-                    in as the slider's images — that wiring depends on the
-                    provider benchmark and is out of scope for this
-                    presentation-only component. */}
-                <BeforeAfterSlider
-                  beforeImage={campaignImages.previewHero}
-                  afterImage={campaignImages.previewVisualization}
-                  style={styles.resultSlider}
+                <PreviewResult key={generation.preview.id} preview={generation.preview} />
+                <Button
+                  label="Delete saved images"
+                  variant="ghost"
+                  onPress={async () => {
+                    try {
+                      await deleteSavedPreview(generation.preview.id);
+                      if (active.current) {
+                        setGeneration({ phase: 'idle' });
+                        setPhoto(null);
+                      }
+                      await refreshHistory();
+                    } catch {
+                      if (active.current) setNotice('Could not delete images. Please retry.');
+                    }
+                  }}
                 />
-                <ThemedText variant="caption" color={colors.textSecondary} style={styles.statusText}>
-                  Your visualization is ready.
-                </ThemedText>
-                <Button label="Report this image" variant="ghost" fullWidth={false} onPress={handleReport} />
+                <Button
+                  label="Report this image"
+                  variant="ghost"
+                  fullWidth={false}
+                  onPress={handleReport}
+                />
               </View>
             )}
 
+            {userId && (
+              <View>
+                <ThemedText variant="eyebrow">SAVED PREVIEWS</ThemedText>
+                <Button label="Refresh saved previews" variant="ghost" onPress={refreshHistory} />
+                {history.length === 0 && (
+                  <ThemedText variant="caption">Your saved previews will appear here.</ThemedText>
+                )}
+                {history.map((item) => (
+                  <Button
+                    key={item.id}
+                    label={
+                      item.visualization_goal +
+                      ' · ' +
+                      new Date(item.created_at).toLocaleDateString()
+                    }
+                    variant="ghost"
+                    disabled={generation.phase === 'working'}
+                    onPress={() => setGeneration({ phase: 'result', preview: item })}
+                  />
+                ))}
+              </View>
+            )}
             <Rule style={styles.rule} />
             <EditorialImage
               variant="portrait"
               uri={campaignImages.previewVisualization}
+              label="ILLUSTRATIVE EXAMPLE"
               aspectRatio={VISUALIZATION_ASPECT_RATIO}
               noDefault
               style={styles.visualizationImage}
             />
 
             <ThemedText variant="caption" color={colors.textMuted} style={styles.disclaimer}>
-              Preview visualizations are illustrative, not a predicted treatment outcome, diagnosis, or guarantee.
+              Preview visualizations are illustrative, not a predicted treatment outcome, diagnosis,
+              or guarantee.
             </ThemedText>
           </>
         ) : (
@@ -296,9 +478,13 @@ export default function PreviewScreen() {
               <ThemedText variant="eyebrow" color={colors.textMuted}>
                 COMING SOON
               </ThemedText>
-              <ThemedText variant="caption" color={colors.textSecondary} style={styles.comingSoonBody}>
-                Glow isn&rsquo;t built yet and isn&rsquo;t included with your Aesthetics Bible Premium
-                subscription today.
+              <ThemedText
+                variant="caption"
+                color={colors.textSecondary}
+                style={styles.comingSoonBody}
+              >
+                Glow isn&rsquo;t built yet and isn&rsquo;t included with your Aesthetics Bible
+                Premium subscription today.
               </ThemedText>
             </View>
             <ThemedText variant="body" color={colors.textSecondary} style={styles.glowIntro}>
@@ -320,13 +506,23 @@ export default function PreviewScreen() {
                     accessibilityLabel={preset}
                     style={styles.presetTile}
                   >
-                    <EditorialImage variant="social" tone={selected ? 'ivory' : 'dark'} label={preset} />
+                    <EditorialImage
+                      variant="social"
+                      tone={selected ? 'ivory' : 'dark'}
+                      label={preset}
+                    />
                   </Pressable>
                 );
               })}
             </View>
 
-            <Button label="Coming Soon" icon="sun" variant="secondary" disabled style={styles.tryButton} />
+            <Button
+              label="Coming Soon"
+              icon="sun"
+              variant="secondary"
+              disabled
+              style={styles.tryButton}
+            />
 
             <Rule style={styles.rule} />
 
@@ -334,11 +530,20 @@ export default function PreviewScreen() {
               <ThemedText variant="eyebrow" color={colors.accent}>
                 MY LOOK
               </ThemedText>
-              <ThemedText variant="displaySmall" color={colors.textOnIvory} style={styles.lookTitle}>
+              <ThemedText
+                variant="displaySmall"
+                color={colors.textOnIvory}
+                style={styles.lookTitle}
+              >
                 My Natural Look
               </ThemedText>
               {myNaturalLookPrefs.map((pref) => (
-                <ThemedText key={pref} variant="body" color={colors.textOnIvory} style={styles.lookPref}>
+                <ThemedText
+                  key={pref}
+                  variant="body"
+                  color={colors.textOnIvory}
+                  style={styles.lookPref}
+                >
                   · {pref}
                 </ThemedText>
               ))}
@@ -359,8 +564,8 @@ export default function PreviewScreen() {
             </View>
 
             <ThemedText variant="caption" color={colors.textMuted} style={styles.disclaimer}>
-              Glow enhances a photo for social sharing — it is separate from Preview and is not a treatment
-              visualization.
+              Glow enhances a photo for social sharing — it is separate from Preview and is not a
+              treatment visualization.
             </ThemedText>
           </>
         )}
@@ -481,7 +686,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   presetTile: {
-    width: '31%',
+    width: '30%',
+    flexGrow: 1,
   },
   lookCard: {
     marginBottom: spacing.lg,

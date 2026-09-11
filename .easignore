@@ -59,3 +59,14 @@ benchmarks/image-providers/inputs/*
 !benchmarks/image-providers/inputs/.gitkeep
 benchmarks/image-providers/outputs/*
 !benchmarks/image-providers/outputs/.gitkeep
+
+# Local research, source archives, and scratch material are not build inputs.
+/benchmarks/
+/Claude outputs/
+/Images/
+/_to_delete/
+/*.zip
+/*.patch
+/*.bundle
+/ backup-before-reconciled-import
+/tatus

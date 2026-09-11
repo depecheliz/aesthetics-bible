@@ -20,7 +20,11 @@
  * side, not in this code.
  */
 
-import Purchases, { type CustomerInfo, type PurchasesOffering } from 'react-native-purchases';
+import Purchases, {
+  PURCHASES_ERROR_CODE,
+  type CustomerInfo,
+  type PurchasesOffering,
+} from 'react-native-purchases';
 import { Platform } from 'react-native';
 import type { Entitlement } from '../../types';
 import type { BillingProvider } from './billing';
@@ -29,7 +33,8 @@ import { env } from '../env';
 const PREMIUM_ENTITLEMENT_ID = 'premium';
 
 export const isRevenueCatConfigured = Boolean(
-  Platform.OS === 'ios' ? env.revenueCatIosApiKey : env.revenueCatAndroidApiKey,
+  env.appEnv !== 'closed-testing' &&
+    (Platform.OS === 'ios' ? env.revenueCatIosApiKey : env.revenueCatAndroidApiKey),
 );
 
 let configured = false;
@@ -73,6 +78,38 @@ async function getOffering(): Promise<PurchasesOffering> {
     );
   }
   return offering;
+}
+
+/**
+ * Read-only variant for display purposes (the paywall's live pricing). Unlike
+ * `getOffering()`, this never throws — a missing offering or configuration
+ * just means the paywall falls back to its static copy rather than blocking
+ * render or surfacing an error for something the user didn't initiate.
+ */
+export async function fetchCurrentOffering(): Promise<PurchasesOffering | null> {
+  if (!isRevenueCatConfigured) {
+    return null;
+  }
+  try {
+    const offerings = await Purchases.getOfferings();
+    return offerings.current ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * True when a purchase attempt failed because the user backed out of the
+ * store sheet — not a real error. `code` is the documented, non-deprecated
+ * way to detect this; `userCancelled` is checked too since it still ships on
+ * the error object. Callers should not show an error banner for this case.
+ */
+export function isUserCancelledPurchase(error: unknown): boolean {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+  const err = error as { code?: PURCHASES_ERROR_CODE; userCancelled?: boolean | null };
+  return err.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR || err.userCancelled === true;
 }
 
 export const revenueCatBilling: BillingProvider = {

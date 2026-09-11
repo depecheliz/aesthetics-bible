@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
@@ -17,6 +18,7 @@ function todayIso(): string {
 }
 
 export default function AddPassportEntryScreen() {
+  const insets = useSafeAreaInsets();
   const { addPassportEntry } = useAppState();
 
   const [treatment, setTreatment] = useState('');
@@ -60,10 +62,10 @@ export default function AddPassportEntryScreen() {
     <Screen>
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={16}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={insets.top}
       >
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <ScreenHeader title="Log a Treatment" />
 
           <FormField label="Treatment" value={treatment} onChangeText={setTreatment} placeholder="e.g. Botox" />
