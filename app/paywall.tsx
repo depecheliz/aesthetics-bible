@@ -8,7 +8,9 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Rule } from '../components/ui/Rule';
 import { PlanPreviewMockup } from '../components/media/PlanPreviewMockup';
+import { EditorialImage } from '../components/media/EditorialImage';
 import { Monogram } from '../components/brand/Monogram';
+import { campaignImages } from '../assets/brand/campaign';
 import { useEntitlement } from '../lib/state/EntitlementContext';
 import { analytics } from '../lib/services/analyticsClient';
 import { isRevenueCatConfigured } from '../lib/services/revenueCatBilling';
@@ -82,6 +84,13 @@ export default function PaywallScreen() {
         <ThemedText variant="body" color={colors.textSecondary} style={styles.subheadline}>
           Unlock your full roadmap, AI Preview, and your private Aesthetics Passport.
         </ThemedText>
+
+        <EditorialImage
+          variant="portrait"
+          uri={campaignImages.paywallStory}
+          monogram
+          style={styles.heroImage}
+        />
 
         <PlanPreviewMockup />
 
@@ -235,6 +244,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   subheadline: {
+    marginBottom: spacing.lg,
+  },
+  heroImage: {
     marginBottom: spacing.lg,
   },
   rule: {
