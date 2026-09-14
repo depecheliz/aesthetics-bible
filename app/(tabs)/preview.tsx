@@ -287,6 +287,8 @@ export default function PreviewScreen() {
               variant="portrait"
               uri={photo ? { uri: photo } : campaignImages.previewHeroCrop}
               label={photo ? 'YOUR PHOTO' : 'ILLUSTRATIVE EXAMPLE'}
+              aspectRatio={4 / 5}
+              fit="contain"
               style={styles.heroImage}
               noDefault
             />
@@ -460,6 +462,7 @@ export default function PreviewScreen() {
               uri={campaignImages.previewVisualization}
               label="ILLUSTRATIVE EXAMPLE"
               aspectRatio={VISUALIZATION_ASPECT_RATIO}
+              fit="contain"
               noDefault
               style={styles.visualizationImage}
             />
@@ -658,8 +661,7 @@ const styles = StyleSheet.create({
     marginVertical: spacing.lg,
   },
   visualizationImage: {
-    alignSelf: 'center',
-    maxWidth: 320,
+    width: '100%',
   },
   disclaimer: {
     marginTop: spacing.md,

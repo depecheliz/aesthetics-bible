@@ -212,8 +212,8 @@ export default function PaywallScreen() {
         )}
 
         <ThemedText variant="caption" color={colors.textSecondary} style={styles.footnote}>
-          Preview is included with a monthly Premium allowance of 10 successful visualizations —
-          not unlimited generations. Cancel anytime.
+          Premium includes 10 successful AI visualizations per month. Your allowance refreshes
+          monthly. Cancel anytime.
         </ThemedText>
       </ScrollView>
     </Screen>

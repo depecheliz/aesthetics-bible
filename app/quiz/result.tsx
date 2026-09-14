@@ -7,7 +7,7 @@ import { ThemedText } from '../../components/typography/ThemedText';
 import { InfoRow } from '../../components/ui/InfoRow';
 import { Rule } from '../../components/ui/Rule';
 import { EditorialImage } from '../../components/media/EditorialImage';
-import { bibleCategoryImages } from '../../assets/brand/bible';
+import { bibleCategoryImages, bibleCategoryAspectRatios } from '../../assets/brand/bible';
 import { TreatmentActionsGrid } from '../../components/plan/TreatmentActionsGrid';
 import { PremiumRoadmapCard } from '../../components/plan/PremiumRoadmapCard';
 import { ShareCard, ShareCardStatRow } from '../../components/media/ShareCard';
@@ -61,7 +61,8 @@ export default function ResultScreen() {
           uri={bibleCategoryImages[category.id].preview}
           zoomSource={bibleCategoryImages[category.id].full}
           zoomable
-          aspectRatio={1}
+          aspectRatio={bibleCategoryAspectRatios[category.id]}
+          fit="contain"
           label={category.name}
           style={styles.heroImage}
         />

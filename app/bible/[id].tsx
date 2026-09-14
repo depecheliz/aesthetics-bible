@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { InfoRow } from '../../components/ui/InfoRow';
 import { Rule } from '../../components/ui/Rule';
 import { EditorialImage } from '../../components/media/EditorialImage';
-import { bibleCategoryImages } from '../../assets/brand/bible';
+import { bibleCategoryImages, bibleCategoryAspectRatios } from '../../assets/brand/bible';
 import {
   bibleCoreProviderQuestions,
   bibleSpecificProviderQuestions,
@@ -65,7 +65,8 @@ export default function TreatmentDetailScreen() {
           uri={bibleCategoryImages[treatment.categoryId].preview}
           zoomSource={bibleCategoryImages[treatment.categoryId].full}
           zoomable
-          aspectRatio={1}
+          aspectRatio={bibleCategoryAspectRatios[treatment.categoryId]}
+          fit="contain"
           label={treatment.name}
           style={styles.heroImage}
         />
