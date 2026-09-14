@@ -199,7 +199,7 @@ export function EditorialImage({
 
       {canZoom && !compact && (
         <View style={styles.zoomBadge} pointerEvents="none">
-          <Feather name="maximize-2" size={13} color={colors.textPrimary} />
+          <Feather name="maximize-2" size={14} color={colors.accentLight} />
         </View>
       )}
 
@@ -260,11 +260,13 @@ const styles = StyleSheet.create({
   zoomBadge: {
     position: 'absolute',
     right: spacing.sm,
-    bottom: spacing.sm,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    top: spacing.sm,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: colors.overlay,
+    borderWidth: 1,
+    borderColor: 'rgba(201,169,126,0.35)',
     alignItems: 'center',
     justifyContent: 'center',
   },

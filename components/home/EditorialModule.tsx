@@ -108,7 +108,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   rowImage: {
-    width: 96,
+    width: 120,
+    borderRadius: 2,
+    overflow: 'hidden',
   },
   textBlock: {},
   eyebrow: {

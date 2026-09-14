@@ -71,7 +71,7 @@ function NewUserHome() {
         See your potential.{'\n'}Build your plan.
       </ThemedText>
 
-      <EditorialImage variant="portrait" uri={campaignImages.homeHeroCrop} monogram style={styles.heroImage} />
+      <EditorialImage variant="portrait" uri={campaignImages.homeHero} monogram style={styles.heroImage} />
 
       <Button
         label="Build My Aesthetics Plan"

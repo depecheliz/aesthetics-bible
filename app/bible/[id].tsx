@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { InfoRow } from '../../components/ui/InfoRow';
 import { Rule } from '../../components/ui/Rule';
 import { EditorialImage } from '../../components/media/EditorialImage';
-import { bibleCategoryAspectRatios, bibleCategoryImages } from '../../assets/brand/bible';
+import { bibleCategoryImages } from '../../assets/brand/bible';
 import {
   bibleCoreProviderQuestions,
   bibleSpecificProviderQuestions,
@@ -65,11 +65,13 @@ export default function TreatmentDetailScreen() {
           uri={bibleCategoryImages[treatment.categoryId].preview}
           zoomSource={bibleCategoryImages[treatment.categoryId].full}
           zoomable
-          fit="contain"
-          aspectRatio={bibleCategoryAspectRatios[treatment.categoryId]}
+          aspectRatio={1}
           label={treatment.name}
           style={styles.heroImage}
         />
+        <ThemedText variant="caption" color={colors.textMuted} style={styles.diagramHint}>
+          Tap image to view full diagram
+        </ThemedText>
 
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
           THE BIBLE · {category.name.toUpperCase()}
@@ -179,7 +181,11 @@ const styles = StyleSheet.create({
   },
   heroImage: {
     marginTop: spacing.md,
+    marginBottom: spacing.xs,
+  },
+  diagramHint: {
     marginBottom: spacing.lg,
+    letterSpacing: 0.6,
   },
   eyebrow: {
     marginBottom: spacing.xs,
