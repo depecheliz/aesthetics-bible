@@ -15,11 +15,11 @@ export const campaignImages = {
    * frame instead of ~40% dead black space. See
    * scripts/recrop-campaign-images.py for the crop rationale.
    */
-  homeHeroCrop: require('./home-hero-crop.jpg'),
+  homeHeroCrop: require('./homeHeroCrop.jpg'),
   /** Preview tab hero — "see a possibility before making a decision." */
   previewHero: require('./preview-hero.jpg'),
   /** Preview tab hero, re-cropped to trim dead space at the bottom. */
-  previewHeroCrop: require('./preview-hero-crop.jpg'),
+  previewHeroCrop: require('./previewHeroCrop.jpg'),
   /** Glow / social — lifestyle imagery for polished social looks. */
   glowSocial: require('./glow-social.jpg'),
   /** Treatment / Bible editorial — used for Result and Bible detail heroes. */
@@ -29,7 +29,7 @@ export const campaignImages = {
   /** Skin / detail — macro-style crop for education and marketing moments. */
   skinDetail: require('./skin-detail.jpg'),
   /** Skin / detail, re-cropped to the brightest/subject band. */
-  skinDetailCrop: require('./skin-detail-crop.jpg'),
+  skinDetailCrop: require('./skinDetailCrop.jpg'),
   /** Pre-composed Preview before/after visualization (labels baked in). */
   previewVisualization: require('./preview-visualization.jpg'),
   /** Botox Bestie header portrait. */
