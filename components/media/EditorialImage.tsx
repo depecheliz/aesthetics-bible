@@ -151,7 +151,7 @@ export function EditorialImage({
         <Image
           testID="editorial-image"
           source={source}
-          style={StyleSheet.absoluteFill}
+          style={[StyleSheet.absoluteFill, styles.imageFill]}
           resizeMode={fit}
           onLoadStart={handleLoadStart}
           onLoad={handleLoad}
@@ -221,6 +221,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  imageFill: {
+    width: '100%',
+    height: '100%',
   },
   placeholder: {
     alignItems: 'center',

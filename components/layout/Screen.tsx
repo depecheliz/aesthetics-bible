@@ -10,7 +10,7 @@ export function Screen({ children, style, edges = ['top', 'bottom', 'left', 'rig
   return (
     <SafeAreaView style={styles.safeArea} edges={Array.from(new Set([...edges, 'left', 'right'] as const))}>
       <View style={[styles.content, style]} {...rest}>
-        {children}
+        <View style={styles.maxWidthWrap}>{children}</View>
       </View>
     </SafeAreaView>
   );
@@ -24,5 +24,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: layout.screenPaddingHorizontal,
+  },
+  maxWidthWrap: {
+    flex: 1,
+    width: '100%',
+    maxWidth: layout.maxContentWidth,
+    alignSelf: 'center',
   },
 });

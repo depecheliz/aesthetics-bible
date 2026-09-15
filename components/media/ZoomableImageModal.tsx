@@ -1,9 +1,10 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   GestureResponderEvent,
   Modal,
   PanResponder,
+  Platform,
   Pressable,
   StyleSheet,
   View,
@@ -64,6 +65,30 @@ export function ZoomableImageModal({ visible, source, label, onClose }: Zoomable
     resetTransform();
     onClose();
   }, [onClose, resetTransform]);
+
+  const closeButtonRef = useRef<View>(null);
+
+  // Web-only focus management: react-native's Modal already handles this
+  // correctly on iOS/Android via the OS's own accessibility tree, so native
+  // behavior is untouched by the Platform.OS guard. On web, react-native-web
+  // renders Modal as a plain absolutely-positioned overlay with no built-in
+  // focus trap, which left the page's previously-focused element (the
+  // diagram's tap-to-zoom trigger) still focused underneath an
+  // aria-hidden="true" background once the modal opened — a real browser
+  // a11y violation. This component only ever mounts while `visible` is
+  // true (see the early return below), so mount/unmount here exactly
+  // matches open/close: focus the close button on open, restore whatever
+  // had focus before on close.
+  useEffect(() => {
+    if (Platform.OS !== 'web') {
+      return undefined;
+    }
+    const previouslyFocused = document.activeElement as (HTMLElement & { focus?: () => void }) | null;
+    (closeButtonRef.current as unknown as { focus?: () => void } | null)?.focus?.();
+    return () => {
+      previouslyFocused?.focus?.();
+    };
+  }, []);
 
   const distanceBetween = (touches: GestureResponderEvent['nativeEvent']['touches']) => {
     const [a, b] = touches;
@@ -157,6 +182,7 @@ export function ZoomableImageModal({ visible, source, label, onClose }: Zoomable
             </View>
 
             <Pressable
+              ref={closeButtonRef}
               onPress={handleClose}
               style={styles.closeButton}
               accessibilityRole="button"
