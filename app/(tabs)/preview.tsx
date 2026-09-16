@@ -7,6 +7,7 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Rule } from '../../components/ui/Rule';
 import { EditorialImage } from '../../components/media/EditorialImage';
+import { BeforeAfterSlider } from '../../components/media/BeforeAfterSlider';
 import { PreviewResult } from '../../components/media/PreviewResult';
 import { randomId } from '../../lib/utils/randomId';
 import { previewGoalInstructions } from '../../supabase/functions/_shared/previewGoals';
@@ -283,15 +284,36 @@ export default function PreviewScreen() {
               See a possibility before making a decision.
             </ThemedText>
 
-            <EditorialImage
-              variant="portrait"
-              uri={photo ? { uri: photo } : campaignImages.previewHeroCrop}
-              label={photo ? 'YOUR PHOTO' : 'ILLUSTRATIVE EXAMPLE'}
-              aspectRatio={4 / 5}
-              fit="contain"
-              style={styles.heroImage}
-              noDefault
-            />
+            {photo === null ? (
+              <>
+                <BeforeAfterSlider
+                  beforeImage={campaignImages.previewDemoBefore}
+                  afterImage={campaignImages.previewDemoAfter}
+                  beforeLabel="BEFORE"
+                  afterLabel="AFTER"
+                  initialPosition={0.2}
+                  autoDemo
+                  aspectRatio={4 / 5}
+                  style={styles.heroImage}
+                />
+                <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.demoCaption}>
+                  ILLUSTRATIVE EXAMPLE
+                </ThemedText>
+                <ThemedText variant="caption" color={colors.textSecondary} style={styles.demoCaptionBody}>
+                  Drag to compare.
+                </ThemedText>
+              </>
+            ) : (
+              <EditorialImage
+                variant="portrait"
+                uri={{ uri: photo }}
+                label="YOUR PHOTO"
+                aspectRatio={4 / 5}
+                fit="contain"
+                style={styles.heroImage}
+                noDefault
+              />
+            )}
 
             <Button
               label={photo ? 'Choose another photo' : 'Choose photo'}
@@ -594,6 +616,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   heroImage: {
+    marginBottom: spacing.lg,
+  },
+  demoCaption: {
+    marginBottom: spacing.xxs,
+  },
+  demoCaptionBody: {
     marginBottom: spacing.lg,
   },
   sectionLabel: {

@@ -38,4 +38,20 @@ export const campaignImages = {
   botoxBestieCrop: require('./botox-bestie-crop.jpg'),
   /** Bonus asset — Paywall story / secondary portrait moments. */
   paywallStory: require('./paywall-story.jpg'),
+  /**
+   * Interactive Preview before/after demo — "before" layer. Registered
+   * (same pose/framing/camera) with `previewDemoAfter` so the two can be
+   * overlaid in a drag-to-compare slider. Use only as a BeforeAfterSlider
+   * layer — never as a static hero image on its own.
+   */
+  previewDemoBefore: require('./preview-demo-before.png'),
+  /** Interactive Preview before/after demo — "after" layer. See `previewDemoBefore`. */
+  previewDemoAfter: require('./preview-demo-after.png'),
+  /**
+   * Pre-composed marketing/reference artwork for the before/after demo —
+   * NOT registered with the before/after pair (different composition) and
+   * NOT for use as a BeforeAfterSlider layer. Reserved for future
+   * campaign/marketing placements only.
+   */
+  previewDemoComparison: require('./preview-demo-comparison.png'),
 } as const;
