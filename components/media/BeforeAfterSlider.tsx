@@ -22,12 +22,11 @@ import { colors, radius, spacing } from '../../constants/theme';
  * flow (see `lib/services/previewGeneration.ts` for that) and must stay
  * that way.
  *
- * LEFT of the divider = before, RIGHT of the divider = after. The
- * "before" image is the top layer, clipped to the divider's x-position
- * (0..dividerX, the left region); the "after" image is the full image
- * underneath, showing through to the right of the clip. Dragging the
- * divider right grows the before-clip window (reveals more before);
- * dragging left shrinks it (reveals more after).
+ * LEFT of the divider = before, RIGHT of the divider = after. Both images
+ * are always rendered in the exact same full-size coordinate space. The
+ * before layer is then clipped by a wrapper whose width follows the
+ * divider. This is important: resizing the image itself with the clip
+ * would make the portrait appear to move/zoom while dragging.
  */
 
 type BeforeAfterSliderProps = {
@@ -59,18 +58,10 @@ const AUTO_DEMO_PEAK = 0.8;
 const AUTO_DEMO_SETTLE = 0.5;
 const AUTO_DEMO_STEP_DURATION = 700;
 
-/** Pure clamp used both by the live drag handler and by tests — kept
- * exported so drag-bounds behavior is directly testable without having to
- * simulate React Native's internal touch-history machinery, which
- * PanResponder needs for real gesture math but this component's own
- * handlers never touch. */
 export function clampToWidth(x: number, width: number): number {
   return Math.max(0, Math.min(width, x));
 }
 
-/** Clamps a normalized (0–1) starting position; a non-finite input (NaN,
- * missing) falls back to the 0.5 default rather than clamping toward an
- * edge. Exported for direct testing, same rationale as `clampToWidth`. */
 export function clampInitialPosition(value: number | undefined): number {
   if (value === undefined || !Number.isFinite(value)) return 0.5;
   return Math.max(0, Math.min(1, value));
@@ -110,33 +101,13 @@ export function BeforeAfterSlider({
 
   const clamp = useCallback((x: number) => clampToWidth(x, widthRef.current), []);
 
-  // Stable identities: react-native-web's <Image> re-runs its own load
-  // effect whenever onLoad/onError change reference, so new inline arrow
-  // functions here would re-trigger the load on every render — which
-  // flips `loaded`, which re-renders this component, which would create
-  // new inline functions again, forever. Same precedent as
-  // EditorialImage.tsx. useCallback breaks that cycle.
   const handleBeforeLoad = useCallback(() => setLoaded((value) => ({ ...value, before: true })), []);
   const handleAfterLoad = useCallback(() => setLoaded((value) => ({ ...value, after: true })), []);
 
-  // Set on the first user-initiated drag or accessibility action; once
-  // true it stays true for the lifetime of this mount, so a user who
-  // interacts before or during the auto-demo sweep permanently owns the
-  // divider and the sweep can never resume or restart.
   const userInteractedRef = useRef(false);
-  // Guards the demo effect below to a single run per mount even if its
-  // dependencies (containerWidth, loaded) change again afterward.
   const demoStartedRef = useRef(false);
   const demoAnimRef = useRef<Animated.Value | null>(null);
 
-  // widthRef (not containerWidth state) is read inside the PanResponder's
-  // handlers deliberately: panResponder is created once via the lazy
-  // useState initializer below and never recreated, so if its handlers
-  // closed over `containerWidth` state instead, they'd forever clamp
-  // against the width at first render (stale closure) rather than the
-  // current one. The ref is only ever read inside onPanResponderGrant/Move
-  // — real event handlers, not render — the lint rule can't see that
-  // through the closure.
   // eslint-disable-next-line react-hooks/refs
   const [panResponder] = useState(() =>
     PanResponder.create({
@@ -158,12 +129,6 @@ export function BeforeAfterSlider({
 
   const resolvedDividerX = dividerX ?? containerWidth * initialFraction;
 
-  // One-shot auto-demo sweep (roughly initialPosition → 80% → 50%),
-  // gated on layout + both images being ready so it never animates over
-  // a blank/loading frame. Runs at most once per mount (demoStartedRef)
-  // and bails entirely if the user already interacted before it could
-  // start; the PanResponder handlers above stop it immediately if the
-  // user interacts while it's running.
   useEffect(() => {
     if (!autoDemo) return undefined;
     if (demoStartedRef.current) return undefined;
@@ -174,9 +139,7 @@ export function BeforeAfterSlider({
     const anim = new Animated.Value(resolvedDividerX);
     demoAnimRef.current = anim;
     const listenerId = anim.addListener(({ value }) => {
-      if (!userInteractedRef.current) {
-        setDividerX(value);
-      }
+      if (!userInteractedRef.current) setDividerX(value);
     });
 
     const sequence = Animated.sequence([
@@ -197,7 +160,7 @@ export function BeforeAfterSlider({
       anim.removeListener(listenerId);
       anim.stopAnimation();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- resolvedDividerX is only read as this effect's animation *starting point*, not a reactive dependency: including it would restart/redefine the sequence on every drag-driven dividerX change, which is exactly what demoStartedRef/userInteractedRef exist to prevent.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoDemo, containerWidth, loaded.before, loaded.after]);
 
   return (
@@ -227,24 +190,25 @@ export function BeforeAfterSlider({
     >
       {containerWidth > 0 && (
         <>
-          {/* After — full image, bottom layer. Shows through to the right
-              of the before-clip window below. */}
+          {/* Full after image underneath. `contain` keeps the entire face
+              visible rather than cropping/zooming it on narrow phones. */}
           <Image
             testID="before-after-slider-after-image"
             source={afterImage}
-            style={StyleSheet.absoluteFill}
+            style={styles.fullImage}
             resizeMode="contain"
             onLoad={handleAfterLoad}
             onError={onImageError}
           />
 
-          {/* Before — top layer, clipped to the divider position (the
-              left region, 0..dividerX). */}
+          {/* The clip changes width, but the before image does NOT. Its
+              fixed container-sized frame stays perfectly registered with
+              the after image while the divider moves. */}
           <View pointerEvents="none" style={[styles.beforeClip, { width: resolvedDividerX }]}>
             <Image
               testID="before-after-slider-before-image"
               source={beforeImage}
-              style={[StyleSheet.absoluteFill, { width: containerWidth }]}
+              style={[styles.beforeImage, { width: containerWidth }]}
               resizeMode="contain"
               onLoad={handleBeforeLoad}
               onError={onImageError}
@@ -252,10 +216,7 @@ export function BeforeAfterSlider({
           </View>
 
           <View pointerEvents="none" style={[styles.divider, { left: resolvedDividerX - 1 }]} />
-          <View
-            pointerEvents="none"
-            style={[styles.handle, { left: resolvedDividerX - HANDLE_SIZE / 2 }]}
-          />
+          <View pointerEvents="none" style={[styles.handle, { left: resolvedDividerX - HANDLE_SIZE / 2 }]} />
 
           <View pointerEvents="none" style={styles.beforeLabelChip}>
             <ThemedText variant="caption" color={colors.textPrimary} style={styles.labelText}>
@@ -287,12 +248,27 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     backgroundColor: colors.imageSurface,
   },
+  fullImage: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+  },
   beforeClip: {
     position: 'absolute',
     top: 0,
     bottom: 0,
     left: 0,
     overflow: 'hidden',
+  },
+  beforeImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    height: '100%',
   },
   divider: {
     position: 'absolute',
