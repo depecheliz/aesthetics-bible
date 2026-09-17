@@ -13,9 +13,8 @@ import {
   bibleCoreProviderQuestions,
   bibleSpecificProviderQuestions,
   bibleStageLabels,
+  bibleTreatments,
   facialAgingLayerLabels,
-  findComparableCategoryId,
-  findComparableTreatmentId,
   getBibleTreatmentById,
   type BibleTreatmentId,
 } from '../../src/domain/bible';
@@ -39,17 +38,15 @@ export default function TreatmentDetailScreen() {
 
   const category = treatmentCategories[treatment.categoryId];
 
-  // Prefer comparing against another named treatment in the same category
-  // (e.g. Botox vs. Dysport) so Compare can show real treatment-level
-  // differences. Falls back to the category-level comparison when this
-  // is the only named treatment in its category.
-  const compareTreatmentId = findComparableTreatmentId(treatment.id as BibleTreatmentId);
-  const compareCategoryId = findComparableCategoryId(treatment.categoryId);
-  const compareHref = compareTreatmentId
-    ? `/compare?ta=${treatment.id}&tb=${compareTreatmentId}`
-    : compareCategoryId
-      ? `/compare?a=${category.id}&b=${compareCategoryId}`
-      : undefined;
+  // Carries only this treatment as comparison A — Compare's own screen
+  // presents CURRENT TREATMENT vs. an interactive CHOOSE TREATMENT picker
+  // for B, rather than this screen guessing a second treatment for the
+  // user. getBibleTreatmentById falls back to a synthetic, category-only
+  // "treatment" (e.g. Peels) for categories with no named entry yet — that
+  // synthetic id isn't in bibleTreatments, so it must be sent to Compare
+  // as a category id (`a=`), not a treatment id (`ta=`).
+  const isNamedTreatment = bibleTreatments.some((t) => t.id === treatment.id);
+  const compareHref = isNamedTreatment ? `/compare?ta=${treatment.id}` : `/compare?a=${category.id}`;
 
   const hasStageContext = treatment.primaryLayers.length > 0;
   const specificQuestions = bibleSpecificProviderQuestions[treatment.id as BibleTreatmentId] ?? [];
@@ -90,15 +87,21 @@ export default function TreatmentDetailScreen() {
         </ThemedText>
 
         {hasStageContext && (
+          // Metadata, not controls — plain, non-interactive Views/Text, no
+          // onPress/accessibilityRole="button" anywhere in this block. Both
+          // badge kinds share the same box styling AND text color so a
+          // layer badge (e.g. "Muscle movement") reads as equally
+          // first-class metadata, not a muted/disabled variant of the
+          // stage badge — only the label text itself differs between them.
           <View style={styles.badgeRow}>
             <View style={styles.badge}>
-              <ThemedText variant="caption" color={colors.accent}>
+              <ThemedText variant="caption" color={colors.textPrimary}>
                 {bibleStageLabels[treatment.stage].toUpperCase()} STAGE
               </ThemedText>
             </View>
             {treatment.primaryLayers.map((layer) => (
               <View key={layer} style={styles.badge}>
-                <ThemedText variant="caption" color={colors.textSecondary}>
+                <ThemedText variant="caption" color={colors.textPrimary}>
                   {facialAgingLayerLabels[layer]}
                 </ThemedText>
               </View>
@@ -125,16 +128,14 @@ export default function TreatmentDetailScreen() {
         )}
 
         <View style={styles.actionsRow}>
-          {compareHref && (
-            <Button
-              label="Compare"
-              icon="bar-chart-2"
-              variant="secondary"
-              fullWidth={false}
-              style={styles.actionButton}
-              onPress={() => router.push(compareHref as Href)}
-            />
-          )}
+          <Button
+            label="Compare"
+            icon="bar-chart-2"
+            variant="secondary"
+            fullWidth={false}
+            style={styles.actionButton}
+            onPress={() => router.push(compareHref as Href)}
+          />
           <Button
             label="Ask Bestie"
             icon="message-circle"
@@ -143,14 +144,8 @@ export default function TreatmentDetailScreen() {
             style={styles.actionButton}
             onPress={() => router.push('/botox-bestie')}
           />
-          <Button
-            label="Find Near Me"
-            icon="map-pin"
-            variant="secondary"
-            fullWidth={false}
-            style={styles.actionButton}
-            onPress={() => router.push('/near-me')}
-          />
+          {/* "Find Near Me" launch entry point hidden for this release —
+              the /near-me route and its implementation are untouched. */}
         </View>
 
         <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>

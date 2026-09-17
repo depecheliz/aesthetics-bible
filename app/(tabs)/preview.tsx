@@ -9,6 +9,7 @@ import { Rule } from '../../components/ui/Rule';
 import { EditorialImage } from '../../components/media/EditorialImage';
 import { BeforeAfterSlider } from '../../components/media/BeforeAfterSlider';
 import { PreviewResult } from '../../components/media/PreviewResult';
+import { PreviewSignInPrompt } from '../../components/media/PreviewSignInPrompt';
 import { randomId } from '../../lib/utils/randomId';
 import { previewGoalInstructions } from '../../supabase/functions/_shared/previewGoals';
 import { campaignImages } from '../../assets/brand/campaign';
@@ -36,6 +37,13 @@ import { colors, radius, spacing } from '../../constants/theme';
 // visualization asset — rendered at its own ratio so the baked-in
 // "TODAY / MY VISUALIZATION" labels and monogram are never cropped.
 const VISUALIZATION_ASPECT_RATIO = 853 / 1844;
+
+// Native aspect ratio of previewDemoBefore/previewDemoAfter (1095x1437,
+// see HANDOFF.md §4). Rendering the demo slider at this exact ratio — not
+// the generic 4/5 used elsewhere — means both layers fill their container
+// edge-to-edge with zero "contain" letterboxing, so there's no possible
+// vertical/horizontal registration gap between the before and after image.
+const PREVIEW_DEMO_ASPECT_RATIO = 1095 / 1437;
 
 type Mode = 'preview' | 'glow';
 
@@ -108,6 +116,7 @@ export default function PreviewScreen() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [history, setHistory] = useState<SavedPreview[]>([]);
   const [notice, setNotice] = useState('');
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
   const pending = useRef<PreviewGenerationRequest | null>(null);
   const active = useRef(false);
   const sessionEpoch = useRef(0);
@@ -182,7 +191,10 @@ export default function PreviewScreen() {
   const handleTryPreview = useCallback(async () => {
     if (busy.current) return;
     if (!userId) {
-      setGeneration({ phase: 'error', message: 'Please sign in to use AI Preview.' });
+      // Authentication is a gate, not a generation failure — never route
+      // this through generation.phase='error', which would relabel the
+      // button "Retry Preview" as if a real API call had failed.
+      setShowSignInPrompt(true);
       return;
     }
     if (!isPreviewGenerationLive) {
@@ -291,9 +303,8 @@ export default function PreviewScreen() {
                   afterImage={campaignImages.previewDemoAfter}
                   beforeLabel="BEFORE"
                   afterLabel="AFTER"
-                  initialPosition={0.2}
-                  autoDemo
-                  aspectRatio={4 / 5}
+                  initialPosition={0.5}
+                  aspectRatio={PREVIEW_DEMO_ASPECT_RATIO}
                   style={styles.heroImage}
                 />
                 <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.demoCaption}>
@@ -595,6 +606,14 @@ export default function PreviewScreen() {
           </>
         )}
       </ScrollView>
+      <PreviewSignInPrompt
+        visible={showSignInPrompt}
+        onContinue={() => {
+          setShowSignInPrompt(false);
+          router.push('/auth/sign-in');
+        }}
+        onDismiss={() => setShowSignInPrompt(false)}
+      />
     </Screen>
   );
 }

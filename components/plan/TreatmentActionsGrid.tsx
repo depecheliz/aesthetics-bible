@@ -9,10 +9,12 @@ import { spacing } from '../../constants/theme';
 type TreatmentActionsGridProps = {
   categoryId: TreatmentCategoryId;
   /**
-   * "result": Learn / Preview / Find Near Me / Save — used on the quiz
-   * Result screen, where saving to the plan is still the point.
-   * "plan": Learn / Compare / Preview / Find Near Me — used on the Plan
-   * tab, where the item is already saved and Compare is more useful.
+   * "result": Learn / Preview / Save — used on the quiz Result screen,
+   * where saving to the plan is still the point.
+   * "plan": Learn / Compare / Preview — used on the Plan tab, where the
+   * item is already saved and Compare is more useful.
+   * ("Find Near Me" is hidden from this grid for this release — see the
+   * comment above where it used to be built.)
    */
   mode?: 'result' | 'plan';
   compareWithCategoryId?: TreatmentCategoryId;
@@ -52,17 +54,9 @@ export function TreatmentActionsGrid({ categoryId, mode = 'result', compareWithC
     />
   );
 
-  const findNearMeButton = (
-    <Button
-      key="near-me"
-      label="Find Near Me"
-      icon="map-pin"
-      variant="secondary"
-      fullWidth={false}
-      style={styles.button}
-      onPress={() => router.push('/near-me')}
-    />
-  );
+  // "Find Near Me" launch entry point hidden for this release — the
+  // /near-me route and its implementation are untouched; only this grid's
+  // button into it is removed.
 
   const saveButton = (
     <Button
@@ -93,7 +87,7 @@ export function TreatmentActionsGrid({ categoryId, mode = 'result', compareWithC
     />
   );
 
-  const buttons = mode === 'plan' ? [learnButton, compareButton, previewButton, findNearMeButton] : [learnButton, previewButton, findNearMeButton, saveButton];
+  const buttons = mode === 'plan' ? [learnButton, compareButton, previewButton] : [learnButton, previewButton, saveButton];
 
   return <View style={styles.grid}>{buttons}</View>;
 }
