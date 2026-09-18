@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../typography/ThemedText';
 import { EditorialImage } from '../media/EditorialImage';
-import { formatCurrency, type PassportEntry } from '../../src/domain/passport';
+import { type PassportEntry } from '../../src/domain/passport';
 import { colors, spacing } from '../../constants/theme';
 
 type EntryCardProps = {
@@ -44,9 +44,6 @@ export function EntryCard({ entry, onPress }: EntryCardProps) {
         <View style={styles.headerRow}>
           <ThemedText variant="bodyLarge" color={colors.textPrimary} style={styles.treatment}>
             {entry.treatment}
-          </ThemedText>
-          <ThemedText variant="caption" color={colors.accent}>
-            {formatCurrency(entry.cost)}
           </ThemedText>
         </View>
         <ThemedText variant="caption" color={colors.textSecondary}>
