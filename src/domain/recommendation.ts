@@ -23,7 +23,7 @@ import {
   type QuizAnswers,
 } from './quiz';
 
-export const RULES_VERSION = 'v1';
+export const RULES_VERSION = 'v2-multiconcern';
 
 export type ComfortLevel = 'skincare' | 'device' | 'injectable';
 export type DowntimeTier = 'none' | 'short' | 'medium' | 'long';
@@ -253,86 +253,141 @@ function dedupe(ids: TreatmentCategoryId[]): TreatmentCategoryId[] {
   return ids.filter((id, index) => ids.indexOf(id) === index);
 }
 
-function filterByComfort(ids: TreatmentCategoryId[], comfort: ComfortId): TreatmentCategoryId[] {
-  const level = comfortToLevel[comfort];
-  if (!level) return ids;
-  return ids.filter((id) => treatmentCategories[id].comfortLevel === level);
+const areaCandidates: Record<AreaId, TreatmentCategoryId[]> = {
+  forehead: ['tox', 'skincare', 'peels'],
+  eyes: ['tox', 'skin_boosters', 'fillers', 'skincare'],
+  cheeks: ['fillers', 'biostimulators', 'lasers', 'peels', 'microneedling'],
+  midface: ['fillers', 'biostimulators', 'threads'],
+  lips: ['fillers', 'skin_boosters', 'skincare'],
+  jawline: ['fillers', 'threads', 'rf', 'ultrasound'],
+  neck: ['ultrasound', 'rf', 'skincare', 'microneedling', 'tox'],
+  overall: [],
+};
+
+const comfortToLevel: Partial<Record<ComfortId, ComfortLevel>> = {
+  skincare_only: 'skincare',
+  devices_lasers: 'device',
+  injectables: 'injectable',
+};
+
+const downtimeAcceptable: Record<DowntimeId, DowntimeTier[]> = {
+  none: ['none'],
+  short: ['none', 'short'],
+  week: ['none', 'short', 'medium'],
+  not_concern: ['none', 'short', 'medium', 'long'],
+};
+
+function scoreCandidates(answers: QuizAnswers): TreatmentCategoryId[] {
+  const scores = new Map<TreatmentCategoryId, number>();
+
+  answers.concern.forEach((concern, concernIndex) => {
+    concernCandidates[concern].forEach((id, rank) => {
+      const concernWeight = Math.max(12, 42 - rank * 10);
+      const primaryBonus = concernIndex === 0 ? 8 : Math.max(0, 5 - concernIndex * 2);
+      scores.set(id, (scores.get(id) ?? 0) + concernWeight + primaryBonus);
+    });
+  });
+
+  answers.area.forEach((area, areaIndex) => {
+    areaCandidates[area].forEach((id, rank) => {
+      const areaWeight = Math.max(6, 20 - rank * 3);
+      const primaryBonus = areaIndex === 0 ? 4 : 0;
+      scores.set(id, (scores.get(id) ?? 0) + areaWeight + primaryBonus);
+    });
+  });
+
+  // Respect an explicit procedure-comfort choice as a true qualifying gate.
+  const requiredLevel = comfortToLevel[answers.comfort];
+  let eligible = [...scores.keys()];
+  if (requiredLevel) {
+    const comfortMatches = eligible.filter((id) => treatmentCategories[id].comfortLevel === requiredLevel);
+    if (comfortMatches.length > 0) {
+      eligible = comfortMatches;
+    } else if (requiredLevel === 'skincare') {
+      // A skincare-only user should never silently receive an injectable/device
+      // top match just because the concern list has no topical candidate.
+      eligible = ['skincare', 'at_home_devices'];
+      eligible.forEach((id, index) => scores.set(id, Math.max(scores.get(id) ?? 0, 16 - index * 2)));
+    }
+  }
+
+  const acceptedDowntime = downtimeAcceptable[answers.downtime];
+  eligible.forEach((id) => {
+    if (acceptedDowntime.includes(treatmentCategories[id].downtimeTier)) {
+      scores.set(id, (scores.get(id) ?? 0) + 8);
+    } else {
+      scores.set(id, (scores.get(id) ?? 0) - 12);
+    }
+
+    const budgetTier = budgetTierByAnswer[answers.budget];
+    if (treatmentCategories[id].costTier <= budgetTier) {
+      scores.set(id, (scores.get(id) ?? 0) + 3);
+    }
+
+    if (answers.intensity === 'subtle' && treatmentCategories[id].comfortLevel === 'skincare') {
+      scores.set(id, (scores.get(id) ?? 0) + 5);
+    }
+    if (answers.intensity === 'more_visible' && treatmentCategories[id].comfortLevel !== 'skincare') {
+      scores.set(id, (scores.get(id) ?? 0) + 4);
+    }
+  });
+
+  return eligible.sort((a, b) => (scores.get(b) ?? 0) - (scores.get(a) ?? 0));
 }
 
-function filterByDowntime(ids: TreatmentCategoryId[], downtime: DowntimeId): TreatmentCategoryId[] {
-  const accepted = downtimeAcceptable[downtime];
-  return ids.filter((id) => accepted.includes(treatmentCategories[id].downtimeTier));
-}
-
-/**
- * Resolves the ordered, filtered candidate list for a concern + comfort +
- * downtime combination, relaxing constraints in a fixed, deterministic
- * order so a result is always returned:
- *   1. comfort + downtime filtered
- *   2. comfort filtered only
- *   3. downtime filtered only
- *   4. unfiltered concern candidates
- */
-function resolveCandidates(concern: ConcernId, comfort: ComfortId, downtime: DowntimeId): TreatmentCategoryId[] {
-  const base = concernCandidates[concern];
-
-  const comfortFiltered = filterByComfort(base, comfort);
-  const comfortAndDowntime = filterByDowntime(comfortFiltered, downtime);
-  if (comfortAndDowntime.length > 0) return comfortAndDowntime;
-
-  if (comfortFiltered.length > 0) return comfortFiltered;
-
-  const downtimeFiltered = filterByDowntime(base, downtime);
-  if (downtimeFiltered.length > 0) return downtimeFiltered;
-
-  return base;
+function joinLabels(values: string[]): string {
+  if (values.length <= 1) return values[0] ?? '';
+  if (values.length === 2) return `${values[0]} and ${values[1]}`;
+  return `${values.slice(0, -1).join(', ')}, and ${values[values.length - 1]}`;
 }
 
 function buildExplanation(answers: QuizAnswers, category: TreatmentCategory): string {
-  const concern = concernLabels[answers.concern].toLowerCase();
-  const area = areaLabels[answers.area].toLowerCase();
+  const concerns = joinLabels(answers.concern.map((id) => concernLabels[id].toLowerCase()));
+  const areas = joinLabels(answers.area.map((id) => areaLabels[id].toLowerCase()));
   const intensity = intensityLabels[answers.intensity].toLowerCase();
   const comfort = comfortLabels[answers.comfort].toLowerCase();
 
-  return `Because you're most interested in improving ${concern} around your ${area}, prefer a result that feels ${intensity}, and are comfortable exploring ${comfort}, ${category.name} is commonly explored as a starting point.`;
+  return `You told us you're focused on ${concerns}, especially around ${areas}. With a ${intensity} result in mind and your preference for ${comfort}, ${category.name} rises to the top of your Aestella profile.`;
 }
 
 function buildBudgetNote(category: TreatmentCategory, budget: QuizAnswers['budget']): string {
   const budgetTier = budgetTierByAnswer[budget];
   if (category.costTier > budgetTier) {
-    return 'Typical cost for this category may run above your stated budget — the alternatives below tend to fit more comfortably.';
+    return 'Typical cost for this category may run above your stated budget — your Blueprint can help you compare lower-investment alternatives.';
   }
   return 'Typical cost for this category generally fits within your stated budget.';
 }
 
-export type RecommendationMatch = {
-  category: TreatmentCategory;
-  explanation: string;
-};
+function buildConsideration(answers: QuizAnswers, category: TreatmentCategory): string | null {
+  if (answers.comfort === 'skincare_only' && category.comfortLevel === 'skincare') {
+    const primary = answers.concern[0];
+    const bestLayerMatch = concernCandidates[primary]?.[0];
+    if (bestLayerMatch && treatmentCategories[bestLayerMatch].comfortLevel !== 'skincare') {
+      return `Your comfort preference changed the ranking: ${category.name} respects your skincare-only choice, while some options that more directly target ${concernLabels[primary].toLowerCase()} use a different treatment category.`;
+    }
+  }
 
-export type RecommendationResult = {
-  rulesVersion: string;
-  concern: ConcernId;
-  area: AreaId;
-  intensity: IntensityId;
-  topMatch: RecommendationMatch;
-  alternates: TreatmentCategory[];
-  budgetNote: string;
-};
+  if (answers.concern.length > 1) {
+    return 'You selected concerns that can involve different aesthetic layers. One treatment may not address every goal, so your full Blueprint compares complementary options rather than forcing everything into one category.';
+  }
 
+  return null;
+}
 export function getRecommendation(answers: QuizAnswers): RecommendationResult {
-  const resolved = resolveCandidates(answers.concern, answers.comfort, answers.downtime);
-  const [topId, ...restResolved] = resolved;
+  const ranked = scoreCandidates(answers);
+  const topId = ranked[0] ?? 'skincare';
   const topCategory = treatmentCategories[topId];
 
-  const fullConcernList = concernCandidates[answers.concern].filter((id) => id !== topId);
-  const alternatePool = dedupe([...restResolved, ...fullConcernList]);
-  const alternates = alternatePool.slice(0, 2).map((id) => treatmentCategories[id]);
+  const concernPool = dedupe(answers.concern.flatMap((concern) => concernCandidates[concern]));
+  const alternatePool = dedupe([...ranked.slice(1), ...concernPool.filter((id) => id !== topId)]);
+  const alternates = alternatePool.slice(0, 3).map((id) => treatmentCategories[id]);
 
   return {
     rulesVersion: RULES_VERSION,
-    concern: answers.concern,
-    area: answers.area,
+    concern: answers.concern[0],
+    area: answers.area[0],
+    concerns: answers.concern,
+    areas: answers.area,
     intensity: answers.intensity,
     topMatch: {
       category: topCategory,
@@ -340,5 +395,6 @@ export function getRecommendation(answers: QuizAnswers): RecommendationResult {
     },
     alternates,
     budgetNote: buildBudgetNote(topCategory, answers.budget),
+    consideration: buildConsideration(answers, topCategory),
   };
 }
