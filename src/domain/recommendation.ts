@@ -264,19 +264,6 @@ const areaCandidates: Record<AreaId, TreatmentCategoryId[]> = {
   overall: [],
 };
 
-const comfortToLevel: Partial<Record<ComfortId, ComfortLevel>> = {
-  skincare_only: 'skincare',
-  devices_lasers: 'device',
-  injectables: 'injectable',
-};
-
-const downtimeAcceptable: Record<DowntimeId, DowntimeTier[]> = {
-  none: ['none'],
-  short: ['none', 'short'],
-  week: ['none', 'short', 'medium'],
-  not_concern: ['none', 'short', 'medium', 'long'],
-};
-
 function scoreCandidates(answers: QuizAnswers): TreatmentCategoryId[] {
   const scores = new Map<TreatmentCategoryId, number>();
 
