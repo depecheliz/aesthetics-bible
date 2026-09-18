@@ -32,9 +32,14 @@ import { env } from '../env';
 
 const PREMIUM_ENTITLEMENT_ID = 'premium';
 
+const platformApiKey =
+  Platform.OS === 'ios' ? env.revenueCatIosApiKey : env.revenueCatAndroidApiKey;
+
+// Closed testing is an Android store build, so it must use the real Play
+// Billing + RevenueCat path when an Android public SDK key is present. Keep
+// the previous guard for any non-Android build labelled closed-testing.
 export const isRevenueCatConfigured = Boolean(
-  env.appEnv !== 'closed-testing' &&
-    (Platform.OS === 'ios' ? env.revenueCatIosApiKey : env.revenueCatAndroidApiKey),
+  platformApiKey && (env.appEnv !== 'closed-testing' || Platform.OS === 'android'),
 );
 
 let configured = false;
@@ -44,8 +49,7 @@ export function configureRevenueCat() {
   if (configured || !isRevenueCatConfigured) {
     return;
   }
-  const apiKey = Platform.OS === 'ios' ? env.revenueCatIosApiKey : env.revenueCatAndroidApiKey;
-  Purchases.configure({ apiKey });
+  Purchases.configure({ apiKey: platformApiKey });
   configured = true;
 }
 
