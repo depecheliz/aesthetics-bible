@@ -8,8 +8,8 @@ jest.mock('./supabaseClient', () => ({ supabase: { from: jest.fn() } }));
 const { supabase } = require('./supabaseClient');
 
 const answers: QuizAnswers = {
-  concern: 'fine_lines',
-  area: 'forehead',
+  concern: ['fine_lines'],
+  area: ['forehead'],
   intensity: 'subtle',
   downtime: 'none',
   comfort: 'injectables',
