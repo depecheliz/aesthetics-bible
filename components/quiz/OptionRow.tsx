@@ -7,13 +7,14 @@ type OptionRowProps = {
   label: string;
   selected: boolean;
   onPress: () => void;
+  selectionMode?: 'single' | 'multi';
 };
 
-export function OptionRow({ label, selected, onPress }: OptionRowProps) {
+export function OptionRow({ label, selected, onPress, selectionMode = 'single' }: OptionRowProps) {
   return (
     <Pressable
       onPress={onPress}
-      accessibilityRole="radio"
+      accessibilityRole={selectionMode === 'multi' ? 'checkbox' : 'radio'}
       accessibilityLabel={label}
       accessibilityState={{ selected }}
       style={styles.row}
