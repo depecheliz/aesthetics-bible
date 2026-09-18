@@ -33,12 +33,34 @@ export default function QuizScreen() {
   const isLastStep = stepIndex === quizQuestions.length - 1;
   const selectedValue = quizAnswers[question.id];
 
+  const selectedValues =
+    question.selection === 'multi' && Array.isArray(selectedValue) ? (selectedValue as string[]) : [];
+  const hasSelection = question.selection === 'multi' ? selectedValues.length > 0 : Boolean(selectedValue);
+
   const handleBack = () => {
     if (stepIndex === 0) {
       router.back();
       return;
     }
     setStepIndex((prev) => prev - 1);
+  };
+
+  const handleOptionPress = (value: string) => {
+    if (question.selection === 'single') {
+      setAnswer(question.id, value as never);
+      return;
+    }
+
+    const current = selectedValues;
+    const isSelected = current.includes(value);
+    if (isSelected) {
+      setAnswer(question.id, current.filter((item) => item !== value) as never);
+      return;
+    }
+
+    if (current.length < question.maxSelections) {
+      setAnswer(question.id, [...current, value] as never);
+    }
   };
 
   const handleContinue = () => {
@@ -68,15 +90,24 @@ export default function QuizScreen() {
         <ThemedText variant="displayLarge" style={styles.title}>
           {question.title}
         </ThemedText>
+        {question.helper ? (
+          <ThemedText variant="body" color={colors.textSecondary} style={styles.helper}>
+            {question.helper}
+          </ThemedText>
+        ) : null}
 
-        {question.options.map((option) => (
-          <OptionRow
-            key={option.value}
-            label={option.label}
-            selected={selectedValue === option.value}
-            onPress={() => setAnswer(question.id, option.value)}
-          />
-        ))}
+        {question.options.map((option) => {
+          const selected =
+            question.selection === 'multi' ? selectedValues.includes(option.value) : selectedValue === option.value;
+          return (
+            <OptionRow
+              key={option.value}
+              label={option.label}
+              selected={selected}
+              onPress={() => handleOptionPress(option.value)}
+            />
+          );
+        })}
       </ScrollView>
 
       <View style={styles.footer}>
@@ -84,7 +115,7 @@ export default function QuizScreen() {
           label={isLastStep ? 'See My Top Match' : 'Continue'}
           icon="arrow-right"
           onPress={handleContinue}
-          disabled={!selectedValue}
+          disabled={!hasSelection}
         />
       </View>
     </Screen>
@@ -103,7 +134,11 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   title: {
-    marginBottom: spacing.xl,
+    marginBottom: spacing.xs,
+  },
+  helper: {
+    marginBottom: spacing.lg,
+    maxWidth: 420,
   },
   footer: {
     paddingVertical: spacing.md,
