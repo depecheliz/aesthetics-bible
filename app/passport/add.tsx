@@ -24,7 +24,6 @@ export default function AddPassportEntryScreen() {
   const [treatment, setTreatment] = useState('');
   const [date, setDate] = useState(todayIso());
   const [provider, setProvider] = useState('');
-  const [cost, setCost] = useState('');
   const [product, setProduct] = useState('');
   const [amountUnits, setAmountUnits] = useState('');
   const [area, setArea] = useState('');
@@ -43,7 +42,10 @@ export default function AddPassportEntryScreen() {
         treatment: treatment.trim(),
         date,
         provider: provider.trim(),
-        cost: Number.parseFloat(cost) || 0,
+        // Cost is intentionally not collected in the Passport UI. Passport is a
+        // private treatment/results record, not a budgeting tool. Keep the
+        // legacy persistence field at 0 until the schema is cleaned up.
+        cost: 0,
         product: product.trim(),
         amountUnits: amountUnits.trim(),
         area: area.trim(),
@@ -71,7 +73,6 @@ export default function AddPassportEntryScreen() {
           <FormField label="Treatment" value={treatment} onChangeText={setTreatment} placeholder="e.g. Botox" />
           <FormField label="Date" value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" />
           <FormField label="Provider" value={provider} onChangeText={setProvider} placeholder="e.g. Ivory & Ash Studio" />
-          <FormField label="Cost" value={cost} onChangeText={setCost} placeholder="0" keyboardType="numeric" />
           <FormField label="Product" value={product} onChangeText={setProduct} placeholder="e.g. Botox, Juvéderm" />
           <FormField
             label="Amount / Units"
