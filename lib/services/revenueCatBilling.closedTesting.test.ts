@@ -1,11 +1,18 @@
 /**
- * Covers the specific safety property from the Android closed-testing audit
- * (see ANDROID_CLOSED_TESTING.md): a closed-testing build must disable real
- * purchases even when a valid platform API key IS present, so testers never
- * accidentally trigger a real store charge. Keys are present here —
- * `revenueCatBilling.unconfigured.test.ts` covers the "no key at all" case.
+ * Covers the Android closed-testing purchase path. A store-distributed test
+ * build must configure RevenueCat when its Android public SDK key is present;
+ * Google Play license testers prevent real charges while RevenueCat continues
+ * to verify the real `premium` entitlement.
  */
 import Purchases from 'react-native-purchases';
+
+jest.mock('react-native/Libraries/Utilities/Platform', () => {
+  const platform = {
+    OS: 'android',
+    select: (options: Record<string, unknown>) => options.android ?? options.default,
+  };
+  return { __esModule: true, default: platform, ...platform };
+});
 
 jest.mock('../env', () => ({
   env: {
@@ -28,12 +35,12 @@ describe('revenueCatBilling (closed-testing build)', () => {
     jest.clearAllMocks();
   });
 
-  it('is not configured even though a valid platform API key is present', () => {
-    expect(isRevenueCatConfigured).toBe(false);
+  it('is configured when a valid Android public SDK key is present', () => {
+    expect(isRevenueCatConfigured).toBe(true);
   });
 
-  it('never configures the SDK, so no real purchase can be triggered by a tester', () => {
+  it('configures the SDK with the platform public key', () => {
     configureRevenueCat();
-    expect(mockPurchases.configure).not.toHaveBeenCalled();
+    expect(mockPurchases.configure).toHaveBeenCalledWith({ apiKey: 'test-android-key' });
   });
 });
