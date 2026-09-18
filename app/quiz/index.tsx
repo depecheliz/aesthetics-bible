@@ -104,6 +104,7 @@ export default function QuizScreen() {
               key={option.value}
               label={option.label}
               selected={selected}
+              selectionMode={question.selection}
               onPress={() => handleOptionPress(option.value)}
             />
           );
