@@ -1,13 +1,14 @@
 /**
- * Persistence for the Aesthetics Profile quiz answers — one current record
- * per user (enforced by a unique constraint on user_id in Supabase).
- * Recommendation calculation itself stays local/domain-driven; this only
- * stores the inputs so they can be recomputed deterministically on hydration.
+ * Persistence for the Aesthetics Profile quiz answers.
+ *
+ * concern/area remain stored in the existing text columns for a no-migration
+ * rollout. New multi-select values are JSON-encoded; legacy scalar rows are
+ * still accepted and normalized to one-item arrays on hydration.
  */
 
 import { supabase } from './supabaseClient';
 import { RULES_VERSION } from '../../src/domain/recommendation';
-import type { QuizAnswers } from '../../src/domain/quiz';
+import type { AreaId, ConcernId, QuizAnswers } from '../../src/domain/quiz';
 
 export interface AestheticsProfileRepository {
   load(userId: string): Promise<QuizAnswers | null>;
@@ -23,10 +24,23 @@ type Row = {
   budget: string;
 };
 
+function parseSelection<T extends string>(value: string): T[] {
+  if (!value) return [];
+  if (value.trim().startsWith('[')) {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed as T[];
+    } catch {
+      // Fall through to legacy scalar handling.
+    }
+  }
+  return [value as T];
+}
+
 function toQuizAnswers(row: Row): QuizAnswers {
   return {
-    concern: row.concern as QuizAnswers['concern'],
-    area: row.area as QuizAnswers['area'],
+    concern: parseSelection<ConcernId>(row.concern),
+    area: parseSelection<AreaId>(row.area),
     intensity: row.intensity as QuizAnswers['intensity'],
     downtime: row.downtime as QuizAnswers['downtime'],
     comfort: row.comfort as QuizAnswers['comfort'],
@@ -50,7 +64,12 @@ export const supabaseAestheticsProfileRepository: AestheticsProfileRepository = 
     const { error } = await supabase.from('aesthetics_profile_answers').upsert(
       {
         user_id: userId,
-        ...answers,
+        concern: JSON.stringify(answers.concern),
+        area: JSON.stringify(answers.area),
+        intensity: answers.intensity,
+        downtime: answers.downtime,
+        comfort: answers.comfort,
+        budget: answers.budget,
         rules_version: RULES_VERSION,
         updated_at: new Date().toISOString(),
       },
