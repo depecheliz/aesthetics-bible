@@ -33,7 +33,7 @@ describe('Quiz completion flow', () => {
       const question = quizQuestions[i];
       const isLast = i === quizQuestions.length - 1;
 
-      await fireEvent.press(screen.getByRole('radio', { name: question.options[0].label }));
+      await fireEvent.press(screen.getByRole(question.selection === 'multi' ? 'checkbox' : 'radio', { name: question.options[0].label }));
       await fireEvent.press(screen.getByRole('button', { name: isLast ? 'See My Top Match' : 'Continue' }));
     }
 
