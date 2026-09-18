@@ -52,14 +52,26 @@ export default function QuizScreen() {
     }
 
     const current = selectedValues;
-    const isSelected = current.includes(value);
-    if (isSelected) {
-      setAnswer(question.id, current.filter((item) => item !== value) as never);
+    const exclusiveValue =
+      (question.id === 'concern' && value === 'not_sure') || (question.id === 'area' && value === 'overall');
+    const hasExclusiveSelection =
+      (question.id === 'concern' && current.includes('not_sure')) ||
+      (question.id === 'area' && current.includes('overall'));
+
+    if (exclusiveValue) {
+      setAnswer(question.id, [value] as never);
       return;
     }
 
-    if (current.length < question.maxSelections) {
-      setAnswer(question.id, [...current, value] as never);
+    const normalizedCurrent = hasExclusiveSelection ? [] : current;
+    const isSelected = normalizedCurrent.includes(value);
+    if (isSelected) {
+      setAnswer(question.id, normalizedCurrent.filter((item) => item !== value) as never);
+      return;
+    }
+
+    if (normalizedCurrent.length < question.maxSelections) {
+      setAnswer(question.id, [...normalizedCurrent, value] as never);
     }
   };
 
