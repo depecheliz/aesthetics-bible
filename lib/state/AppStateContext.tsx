@@ -22,7 +22,7 @@ type SavedPlanItem = {
 
 function isCompleteQuizAnswers(answers: Partial<QuizAnswers>): answers is QuizAnswers {
   return Boolean(
-    answers.concern && answers.area && answers.intensity && answers.downtime && answers.comfort && answers.budget,
+    answers.concerns?.length && answers.areas?.length && answers.intensity && answers.downtime && answers.comfort && answers.budget,
   );
 }
 
@@ -81,7 +81,7 @@ export function AppStateProvider({
   initialPassportEntries = samplePassportEntries,
   persistence,
 }: AppStateProviderProps) {
-  const [quizAnswers, setQuizAnswers] = useState<Partial<QuizAnswers>>({});
+  const [quizAnswers, setQuizAnswers] = useState<Partial<QuizAnswers>>({ priorities: [] });
   const [result, setResultState] = useState<RecommendationResult | null>(initialResult);
   const [savedPlanItems, setSavedPlanItems] = useState<SavedPlanItem[]>(initialSavedPlanItems);
   const [savedProviderIds, setSavedProviderIds] = useState<string[]>([]);
@@ -104,7 +104,7 @@ export function AppStateProvider({
         setResultState(null);
         setSavedPlanItems([]);
         setPassportEntries(samplePassportEntries);
-        setQuizAnswers({});
+        setQuizAnswers({ priorities: [] });
       }
       hydratedForUserRef.current = null;
       return;
@@ -147,7 +147,7 @@ export function AppStateProvider({
   };
 
   const resetQuiz = () => {
-    setQuizAnswers({});
+    setQuizAnswers({ priorities: [] });
     setResultState(null);
   };
 
