@@ -12,7 +12,7 @@ import { campaignImages } from '../../assets/brand/campaign';
 import { useAppState } from '../../lib/state/AppStateContext';
 import { useOptionalAuth } from '../../lib/state/AuthContext';
 import { useRequireAuth } from '../../lib/state/useRequireAuth';
-import { formatCurrency, sortEntriesByDateDesc, summarizeEntriesThisYear } from '../../src/domain/passport';
+import { sortEntriesByDateDesc, summarizeEntriesThisYear } from '../../src/domain/passport';
 import { colors, radius, spacing } from '../../constants/theme';
 
 function PassportEmptyState({ onAddTreatment }: { onAddTreatment: () => void }) {
@@ -50,7 +50,7 @@ export default function PassportScreen() {
     return <PassportEmptyState onAddTreatment={handleAddTreatment} />;
   }
 
-  const { spendThisYear, treatmentsThisYear, mostRecent } = summarizeEntriesThisYear(passportEntries);
+  const { treatmentsThisYear, mostRecent } = summarizeEntriesThisYear(passportEntries);
   const timeline = sortEntriesByDateDesc(passportEntries);
 
   return (
@@ -65,10 +65,13 @@ export default function PassportScreen() {
           </View>
         )}
         <ThemedText variant="eyebrow" color={colors.accent} style={styles.eyebrow}>
-          YOUR YEAR IN AESTHETICS
+          YOUR AESTELLA PASSPORT
         </ThemedText>
-        <ThemedText variant="statHero" color={colors.textPrimary} style={styles.heroStat}>
-          {formatCurrency(spendThisYear)}
+        <ThemedText variant="displayLarge" color={colors.textPrimary} style={styles.passportTitle}>
+          Your aesthetics journey
+        </ThemedText>
+        <ThemedText variant="bodyLarge" color={colors.textSecondary} style={styles.passportIntro}>
+          A private record of your treatments, progress and results.
         </ThemedText>
 
         <View style={styles.secondaryStatsRow}>
@@ -77,15 +80,15 @@ export default function PassportScreen() {
               {treatmentsThisYear}
             </ThemedText>
             <ThemedText variant="caption" color={colors.textSecondary}>
-              TREATMENTS
+              TREATMENTS LOGGED
             </ThemedText>
           </View>
           <View style={styles.secondaryStat}>
-            <ThemedText variant="displaySmall" color={colors.textPrimary} numberOfLines={1}>
-              {mostRecent?.treatment ?? '—'}
+            <ThemedText variant="caption" color={colors.textMuted}>
+              LATEST TREATMENT
             </ThemedText>
-            <ThemedText variant="caption" color={colors.textSecondary}>
-              MOST RECENT
+            <ThemedText variant="bodyLarge" color={colors.textPrimary} numberOfLines={2}>
+              {mostRecent?.treatment ?? '—'}
             </ThemedText>
           </View>
         </View>
@@ -93,7 +96,7 @@ export default function PassportScreen() {
 
         <View style={styles.quickActions}>
           <Button
-            label="Progress Photos"
+            label="Add Progress Photo"
             icon="image"
             variant="secondary"
             fullWidth={false}
@@ -101,7 +104,7 @@ export default function PassportScreen() {
             onPress={() => router.push('/passport/photos')}
           />
           <Button
-            label="Add Treatment"
+            label="Log a Treatment"
             icon="plus"
             variant="secondary"
             fullWidth={false}
@@ -112,7 +115,10 @@ export default function PassportScreen() {
 
         <Pressable onPress={() => router.push('/passport/photos')} style={styles.progressStrip}>
           <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
-            PROGRESS
+            YOUR PROGRESS
+          </ThemedText>
+          <ThemedText variant="caption" color={colors.textMuted} style={styles.progressHint}>
+            Keep private before-and-after photos together so you can see your results over time.
           </ThemedText>
           <View style={styles.progressRow}>
             <View style={styles.progressThumb}>
@@ -128,7 +134,7 @@ export default function PassportScreen() {
         </Pressable>
 
         <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
-          TIMELINE
+          TREATMENT HISTORY
         </ThemedText>
         {timeline.map((entry) => (
           <EntryCard key={entry.id} entry={entry} onPress={() => router.push(`/passport/${entry.id}`)} />
@@ -188,7 +194,10 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     letterSpacing: 0.4,
   },
-  heroStat: {
+  passportTitle: {
+    marginBottom: spacing.xs,
+  },
+  passportIntro: {
     marginBottom: spacing.lg,
   },
   secondaryStatsRow: {
@@ -216,6 +225,11 @@ const styles = StyleSheet.create({
   },
   progressStrip: {
     marginBottom: spacing.xl,
+  },
+  progressHint: {
+    marginTop: -spacing.xs,
+    marginBottom: spacing.md,
+    maxWidth: 360,
   },
   progressRow: {
     flexWrap: 'wrap',
