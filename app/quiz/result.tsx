@@ -40,14 +40,16 @@ export default function ResultScreen() {
     return null;
   }
 
-  const { topMatch, alternates, budgetNote } = result;
+  const { topMatch, alternates, budgetNote, consideration } = result;
   const category = topMatch.category;
   const matchCount = alternates.length;
-  const personalizedReason = `Selected for your ${concernLabels[result.concern].toLowerCase()} goal, focused on your ${areaLabels[result.area].toLowerCase()}, with a ${intensityLabels[result.intensity].toLowerCase()} result in mind.`;
+  const concernSummary = result.concerns.map((id) => concernLabels[id]).join(' · ');
+  const areaSummary = result.areas.map((id) => areaLabels[id]).join(' · ');
+  const personalizedReason = topMatch.explanation;
 
   const matchReasons = [
-    { label: 'Your goal', value: concernLabels[result.concern] },
-    { label: 'Focus area', value: areaLabels[result.area] },
+    { label: result.concerns.length > 1 ? 'Your goals' : 'Your goal', value: concernSummary },
+    { label: result.areas.length > 1 ? 'Focus areas' : 'Focus area', value: areaSummary },
     { label: 'Your style', value: intensityLabels[result.intensity] },
   ];
 
@@ -102,6 +104,17 @@ export default function ResultScreen() {
             </View>
           ))}
         </View>
+
+        {consideration ? (
+          <View style={styles.consideration}>
+            <ThemedText variant="eyebrow" color={colors.accent} style={styles.considerationLabel}>
+              AESTELLA INSIGHT
+            </ThemedText>
+            <ThemedText variant="body" color={colors.textSecondary}>
+              {consideration}
+            </ThemedText>
+          </View>
+        ) : null}
 
         <Card variant="ivory" style={styles.unlockCard}>
           <View style={styles.unlockTopline}>
@@ -191,6 +204,16 @@ const styles = StyleSheet.create({
   },
   whyCopy: {
     flex: 1,
+  },
+  consideration: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    paddingVertical: spacing.md,
+    marginBottom: spacing.md,
+  },
+  considerationLabel: {
+    marginBottom: spacing.xs,
   },
   unlockCard: {
     overflow: 'hidden',
