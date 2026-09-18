@@ -8,8 +8,8 @@ import type { PersistenceAdapter } from '../services/persistenceAdapter';
 import type { NewPassportEntryInput, PassportEntry } from '../../src/domain/passport';
 
 const answers: QuizAnswers = {
-  concern: 'fine_lines',
-  area: 'forehead',
+  concern: ['fine_lines'],
+  area: ['forehead'],
   intensity: 'subtle',
   downtime: 'none',
   comfort: 'injectables',
@@ -150,7 +150,7 @@ describe('AppStateContext persistence', () => {
     });
 
     await waitFor(() => expect(adapter.saveQuizAnswersAndPlan).toHaveBeenCalledTimes(1));
-    expect(adapter.saveQuizAnswersAndPlan).toHaveBeenCalledWith(answers, expect.objectContaining({ concern: 'fine_lines' }));
+    expect(adapter.saveQuizAnswersAndPlan).toHaveBeenCalledWith(answers, expect.objectContaining({ concern: ['fine_lines'] }));
   });
 
   it('persists a saved plan item via the adapter when authenticated', async () => {
