@@ -42,8 +42,8 @@ export default function ResultScreen() {
 
   const { topMatch, alternates, budgetNote } = result;
   const category = topMatch.category;
-  const matchCount = alternates.length;
-  const personalizedReason = `Selected for your ${concernLabels[result.concern].toLowerCase()} goal, focused on your ${areaLabels[result.area].toLowerCase()}, with a ${intensityLabels[result.intensity].toLowerCase()} result in mind.`;
+  const matchCount = alternates.length;\n  const intelligenceTease = result.layerCount > 1 ? `${result.layerCount} aesthetic layers detected` : 'Your personalized treatment path';
+  const concernSummary = result.concerns.map((id) => concernLabels[id]).join(', ');\n  const areaSummary = result.areas.map((id) => areaLabels[id]).join(', ');\n  const personalizedReason = `Selected from your ${concernSummary.toLowerCase()} goals, focused on ${areaSummary.toLowerCase()}, with a ${intensityLabels[result.intensity].toLowerCase()} result in mind.`;
 
   const matchReasons = [
     { label: 'Your goal', value: concernLabels[result.concern] },
@@ -116,12 +116,12 @@ export default function ResultScreen() {
               : 'Your complete personalized roadmap is ready.'}
           </ThemedText>
           <ThemedText variant="body" color={colors.textMuted} style={styles.unlockDetails}>
-            Your treatment roadmap · full comparisons · AI Preview
+            {intelligenceTease} · full comparisons · AI Preview
           </ThemedText>
           <Button label="Unlock My Blueprint" onPress={unlockBlueprint} style={styles.unlockButton} />
         </Card>
 
-        <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.detailsLabel}>
+        <Card style={styles.insightCard}>\n          <ThemedText variant="eyebrow" color={colors.accent}>ONE THING TO KNOW</ThemedText>\n          <ThemedText variant="body" color={colors.textSecondary} style={styles.insightCopy}>{result.tradeoff}</ThemedText>\n          {result.comfortConflict ? <ThemedText variant="caption" color={colors.textSecondary} style={styles.conflictCopy}>{result.comfortConflict}</ThemedText> : null}\n          {result.ageContext ? <ThemedText variant="caption" color={colors.textSecondary} style={styles.conflictCopy}>{result.ageContext}</ThemedText> : null}\n        </Card>\n\n        <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.detailsLabel}>
           YOUR MATCH AT A GLANCE
         </ThemedText>
         <Rule style={styles.rule} />
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   unlockButton: {
     marginTop: spacing.xs,
   },
-  detailsLabel: {
+  insightCard: { marginBottom: spacing.xl },\n  insightCopy: { marginTop: spacing.sm },\n  conflictCopy: { marginTop: spacing.sm },\n  detailsLabel: {
     marginBottom: spacing.sm,
   },
   rule: {
