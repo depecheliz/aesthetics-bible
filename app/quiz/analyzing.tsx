@@ -16,7 +16,7 @@ import { colors, spacing } from '../../constants/theme';
  * actually being assembled — the user's profile/plan from their answers.
  */
 
-const STEPS = ['Reading your answers', 'Building your Aestella Profile', 'Preparing your plan'];
+const STEPS = ['Mapping your goals and focus areas', 'Comparing treatment layers and preferences', 'Building your Aestella Profile'];
 
 const STEP_DURATION_MS = 700;
 
@@ -55,7 +55,7 @@ export default function AnalyzingScreen() {
           {STEPS[stepIndex]}
         </ThemedText>
         <ThemedText variant="caption" color={colors.textSecondary}>
-          Just a moment.
+          Using your answers to build an explainable match — no photo diagnosis.
         </ThemedText>
       </View>
     </Screen>
