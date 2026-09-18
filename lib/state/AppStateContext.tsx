@@ -22,7 +22,12 @@ type SavedPlanItem = {
 
 function isCompleteQuizAnswers(answers: Partial<QuizAnswers>): answers is QuizAnswers {
   return Boolean(
-    answers.concern && answers.area && answers.intensity && answers.downtime && answers.comfort && answers.budget,
+    answers.concern?.length &&
+      answers.area?.length &&
+      answers.intensity &&
+      answers.downtime &&
+      answers.comfort &&
+      answers.budget,
   );
 }
 
