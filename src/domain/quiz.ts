@@ -1,8 +1,9 @@
 /**
  * Aesthetics Profile quiz — types, labels, and question data.
  *
- * Pure data/types only. No UI, no navigation, no side effects — screens
- * render from this and the recommendation engine consumes it.
+ * Concerns and focus areas are intentionally multi-select so the profile can
+ * represent a real multi-layer aesthetic goal instead of forcing one concern
+ * into one zone. Recommendation logic remains deterministic and source-backed.
  */
 
 export type ConcernId =
@@ -18,25 +19,21 @@ export type ConcernId =
   | 'not_sure';
 
 export type AreaId = 'forehead' | 'eyes' | 'cheeks' | 'midface' | 'lips' | 'jawline' | 'neck' | 'overall';
-
 export type IntensityId = 'subtle' | 'natural' | 'more_visible';
-
 export type DowntimeId = 'none' | 'short' | 'week' | 'not_concern';
-
 export type ComfortId = 'skincare_only' | 'devices_lasers' | 'injectables' | 'multiple' | 'not_sure';
-
 export type BudgetId = 'under_500' | '500_1500' | '1500_3000' | '3000_plus';
 
 export type QuizAnswers = {
-  concern: ConcernId;
-  area: AreaId;
+  concern: ConcernId[];
+  area: AreaId[];
   intensity: IntensityId;
   downtime: DowntimeId;
   comfort: ComfortId;
   budget: BudgetId;
 };
 
-export type QuizAnswerValue = QuizAnswers[keyof QuizAnswers];
+export type QuizAnswerValue = ConcernId | AreaId | IntensityId | DowntimeId | ComfortId | BudgetId;
 
 export const concernLabels: Record<ConcernId, string> = {
   fine_lines: 'Fine lines / wrinkles',
@@ -90,11 +87,25 @@ export const budgetLabels: Record<BudgetId, string> = {
   '3000_plus': '$3,000+',
 };
 
-export type QuizQuestion = {
-  id: keyof QuizAnswers;
-  title: string;
-  options: { value: QuizAnswerValue; label: string }[];
-};
+type SingleQuestionId = 'intensity' | 'downtime' | 'comfort' | 'budget';
+type MultiQuestionId = 'concern' | 'area';
+
+export type QuizQuestion =
+  | {
+      id: MultiQuestionId;
+      title: string;
+      helper: string;
+      selection: 'multi';
+      maxSelections: number;
+      options: { value: ConcernId | AreaId; label: string }[];
+    }
+  | {
+      id: SingleQuestionId;
+      title: string;
+      helper?: string;
+      selection: 'single';
+      options: { value: QuizAnswerValue; label: string }[];
+    };
 
 function toOptions<T extends string>(labels: Record<T, string>): { value: T; label: string }[] {
   return (Object.keys(labels) as T[]).map((value) => ({ value, label: labels[value] }));
@@ -104,31 +115,42 @@ export const quizQuestions: QuizQuestion[] = [
   {
     id: 'concern',
     title: 'What would you most like to improve?',
+    helper: 'Choose up to 3. Aestella will look across the different layers involved.',
+    selection: 'multi',
+    maxSelections: 3,
     options: toOptions(concernLabels),
   },
   {
     id: 'area',
-    title: 'Where is your main concern?',
+    title: 'Where would you like to focus?',
+    helper: 'Choose up to 2 areas.',
+    selection: 'multi',
+    maxSelections: 2,
     options: toOptions(areaLabels),
   },
   {
     id: 'intensity',
     title: 'What kind of result do you prefer?',
+    selection: 'single',
     options: toOptions(intensityLabels),
   },
   {
     id: 'downtime',
     title: 'How much downtime are you comfortable with?',
+    selection: 'single',
     options: toOptions(downtimeLabels),
   },
   {
     id: 'comfort',
     title: 'What are you comfortable exploring?',
+    helper: 'We will respect this choice when selecting your top match.',
+    selection: 'single',
     options: toOptions(comfortLabels),
   },
   {
     id: 'budget',
     title: 'Approximate annual aesthetics budget',
+    selection: 'single',
     options: toOptions(budgetLabels),
   },
 ];
