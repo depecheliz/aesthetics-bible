@@ -1,44 +1,46 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { Screen } from '../../components/layout/Screen';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { ThemedText } from '../../components/typography/ThemedText';
 import { Rule } from '../../components/ui/Rule';
-import { EditorialImage } from '../../components/media/EditorialImage';
-import { colors, spacing } from '../../constants/theme';
+import { colors, radius, spacing } from '../../constants/theme';
 
-type StageId = 'baseline' | 'two_weeks' | 'one_month' | 'three_months';
+const stages = [
+  {
+    label: 'BEFORE',
+    timing: 'Before treatment',
+    image: require('../../assets/brand/campaign/preview-demo-before.png'),
+  },
+  {
+    label: 'FOLLOW-UP',
+    timing: 'Early results',
+    image: require('../../assets/brand/campaign/preview-demo-after.png'),
+  },
+  {
+    label: 'LATEST',
+    timing: 'Latest results',
+    image: require('../../assets/brand/campaign/preview-demo-after.png'),
+  },
+] as const;
 
-const stages: { id: StageId; label: string }[] = [
-  { id: 'baseline', label: 'Baseline' },
-  { id: 'two_weeks', label: '2 Weeks' },
-  { id: 'one_month', label: '1 Month' },
-  { id: 'three_months', label: '3 Months' },
-];
-
-// HONEST COMING SOON: photo storage (camera/library capture, upload, Supabase
-// Storage) is explicitly out of P0 scope — see BUILD_STATUS.md. This screen
-// previously simulated a photo being added by flipping local state with no
-// real photo ever touched. That is no longer acceptable inside a paid
-// feature, so every stage now shows a plain "coming soon" state instead of
-// pretending to work. Nothing here is tappable into a fake success.
-function PhotoStageRow({ label }: { label: string }) {
+function SampleStage({
+  label,
+  timing,
+  image,
+}: {
+  label: string;
+  timing: string;
+  image: number;
+}) {
   return (
-    <View style={styles.stageRow}>
-      <View style={styles.stageImageWrap}>
-        {/* compact: this thumbnail is too narrow for the "COMING SOON"
-            label chip to render without clipping, and the adjacent caption
-            already says photo tracking isn't available yet. */}
-        <EditorialImage variant="skin-detail" compact style={styles.stageImage} />
-      </View>
-      <View style={styles.stageMeta}>
-        <ThemedText variant="bodyLarge" color={colors.textPrimary}>
-          {label}
-        </ThemedText>
-        <ThemedText variant="caption" color={colors.textSecondary}>
-          Photo tracking isn&rsquo;t available yet.
-        </ThemedText>
-      </View>
+    <View style={styles.stage}>
+      <Image source={image} style={styles.stageImage} resizeMode="cover" />
+      <ThemedText variant="eyebrow" color={colors.textPrimary} style={styles.stageLabel}>
+        {label}
+      </ThemedText>
+      <ThemedText variant="caption" color={colors.textSecondary}>
+        {timing}
+      </ThemedText>
     </View>
   );
 }
@@ -49,34 +51,39 @@ export default function ProgressPhotosScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader title="Progress Photos" />
 
+        <ThemedText variant="bodyLarge" color={colors.textPrimary} style={styles.heading}>
+          See your aesthetic journey unfold over time.
+        </ThemedText>
         <ThemedText variant="body" color={colors.textSecondary} style={styles.intro}>
-          Private tracking photos for your own history — separate from Preview, which creates
-          AI-generated images. This feature is coming soon.
+          Keep private photos from before treatment through your latest results—all in one place.
         </ThemedText>
 
         <Rule style={styles.rule} />
 
-        {stages.map((stage) => (
-          <PhotoStageRow key={stage.id} label={stage.label} />
-        ))}
+        <ThemedText variant="eyebrow" color={colors.textSecondary}>
+          SAMPLE PROGRESS JOURNEY
+        </ThemedText>
+        <ThemedText variant="caption" color={colors.textSecondary} style={styles.sampleIntro}>
+          See how Aestella helps you track results over time.
+        </ThemedText>
 
-        <Rule style={styles.rule} />
+        <View style={styles.stageGrid}>
+          {stages.map((stage) => (
+            <SampleStage key={stage.label} {...stage} />
+          ))}
+        </View>
 
-        <View style={styles.storyRow}>
-          <Feather name="film" size={16} color={colors.textMuted} style={styles.storyIcon} />
-          <View style={styles.storyText}>
-            <ThemedText variant="bodyLarge" color={colors.textPrimary}>
-              Create Progress Story
-            </ThemedText>
-            <ThemedText variant="caption" color={colors.textSecondary}>
-              Coming soon.
-            </ThemedText>
-          </View>
+        <View style={styles.noteCard}>
+          <ThemedText variant="bodyLarge" color={colors.textPrimary}>
+            Your photos. Your timeline.
+          </ThemedText>
+          <ThemedText variant="body" color={colors.textSecondary} style={styles.noteText}>
+            Progress photos are designed to connect to the treatments in your Passport, so your history and visual results stay together.
+          </ThemedText>
         </View>
 
         <ThemedText variant="caption" color={colors.textMuted} style={styles.footnote}>
-          Photos stay private unless you explicitly choose to create and export a share image, once
-          this feature ships.
+          Your progress photos stay private unless you choose to share or export them.
         </ThemedText>
       </ScrollView>
     </Screen>
@@ -87,41 +94,50 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: spacing.xxxl,
   },
+  heading: {
+    marginBottom: spacing.xs,
+  },
   intro: {
     marginBottom: spacing.lg,
   },
   rule: {
     width: '100%',
     opacity: 0.4,
+    marginBottom: spacing.lg,
+  },
+  sampleIntro: {
+    marginTop: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  stageGrid: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.xl,
+  },
+  stage: {
+    flex: 1,
+    minWidth: 0,
+  },
+  stageImage: {
+    width: '100%',
+    aspectRatio: 0.8,
+    borderRadius: radius.sm,
     marginBottom: spacing.sm,
   },
-  stageRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    gap: spacing.md,
+  stageLabel: {
+    marginBottom: 2,
   },
-  stageImageWrap: {
-    width: 72,
+  noteCard: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
   },
-  stageImage: {},
-  stageMeta: {
-    flex: 1,
-  },
-  storyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    gap: spacing.sm,
-  },
-  storyIcon: {
-    marginTop: 2,
-  },
-  storyText: {
-    flex: 1,
+  noteText: {
+    marginTop: spacing.xs,
   },
   footnote: {
-    marginTop: spacing.lg,
     marginBottom: spacing.xl,
   },
 });
