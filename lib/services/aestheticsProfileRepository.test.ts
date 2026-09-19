@@ -18,7 +18,7 @@ describe('supabaseAestheticsProfileRepository', () => {
   });
 
   it('load() maps a row back to QuizAnswers', async () => {
-    const row = { concern: ['fine_lines'], area: ['forehead'], intensity: 'subtle', downtime: 'none', comfort: 'injectables', budget: '1500_3000' };
+    const row = { concern: '[\"fine_lines\"]', area: '[\"forehead\"]', intensity: 'subtle', downtime: 'none', comfort: 'injectables', budget: '1500_3000' };
     const maybeSingle = jest.fn(async () => ({ data: row, error: null }));
     supabase.from.mockReturnValue({ select: () => ({ eq: () => ({ maybeSingle }) }) });
 
@@ -40,7 +40,7 @@ describe('supabaseAestheticsProfileRepository', () => {
     });
 
     expect(upsert).toHaveBeenCalledWith(
-      expect.objectContaining({ user_id: 'user-1', concern: ['fine_lines'], rules_version: RULES_VERSION }),
+      expect.objectContaining({ user_id: 'user-1', concern: '[\"fine_lines\"]', area: '[\"forehead\"]', rules_version: RULES_VERSION }),
       { onConflict: 'user_id' },
     );
   });
