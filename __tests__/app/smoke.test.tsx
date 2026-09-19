@@ -148,6 +148,7 @@ describe('Screen smoke tests', () => {
       </AppStateProvider>,
     );
     expect(screen.getByText('YOUR AESTELLA PASSPORT')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'View Progress Photos' })).toBeTruthy();
   });
 
   it('renders the Passport tab empty state', async () => {
@@ -162,6 +163,9 @@ describe('Screen smoke tests', () => {
   it('renders the Progress Photos screen', async () => {
     await render(<ProgressPhotosScreen />);
     expect(screen.getByText('SAMPLE PROGRESS JOURNEY')).toBeTruthy();
+    expect(screen.getByText('BEFORE')).toBeTruthy();
+    expect(screen.getByText('FOLLOW-UP')).toBeTruthy();
+    expect(screen.getByText('LATEST')).toBeTruthy();
   });
 
   it('renders a Passport entry detail page', async () => {
