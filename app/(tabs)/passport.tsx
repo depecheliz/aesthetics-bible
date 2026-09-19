@@ -148,13 +148,6 @@ export default function PassportScreen() {
           <EntryCard key={entry.id} entry={entry} onPress={() => router.push(`/passport/${entry.id}`)} />
         ))}
 
-        <View style={styles.wrappedTeaser}>
-          <Feather name="gift" size={16} color={colors.textMuted} style={styles.wrappedIcon} />
-          <ThemedText variant="caption" color={colors.textMuted}>
-            Coming soon: your Aesthetics Wrapped — a shareable look back at your year.
-          </ThemedText>
-        </View>
-
         <AccountSection />
       </ScrollView>
     </Screen>
@@ -254,13 +247,5 @@ const styles = StyleSheet.create({
   },
   progressMore: {
     justifyContent: 'center',
-  },
-  wrappedTeaser: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing.lg,
-  },
-  wrappedIcon: {
-    marginRight: spacing.xs,
   },
 });
