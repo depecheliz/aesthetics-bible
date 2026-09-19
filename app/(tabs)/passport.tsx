@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Screen } from '../../components/layout/Screen';
@@ -96,7 +96,7 @@ export default function PassportScreen() {
 
         <View style={styles.quickActions}>
           <Button
-            label="Add Progress Photo"
+            label="View Progress Photos"
             icon="image"
             variant="secondary"
             fullWidth={false}
@@ -122,10 +122,18 @@ export default function PassportScreen() {
           </ThemedText>
           <View style={styles.progressRow}>
             <View style={styles.progressThumb}>
-              <EditorialImage variant="skin-detail" compact />
+              <Image
+                source={require('../../assets/brand/passport/passport-demo-before.jpg')}
+                style={styles.progressThumbImage}
+                resizeMode="cover"
+              />
             </View>
             <View style={styles.progressThumb}>
-              <EditorialImage variant="skin-detail" compact />
+              <Image
+                source={require('../../assets/brand/passport/passport-demo-latest.jpg')}
+                style={styles.progressThumbImage}
+                resizeMode="cover"
+              />
             </View>
             <View style={styles.progressMore}>
               <Feather name="arrow-right" size={16} color={colors.accent} />
@@ -238,6 +246,11 @@ const styles = StyleSheet.create({
   },
   progressThumb: {
     width: 64,
+  },
+  progressThumbImage: {
+    width: 64,
+    aspectRatio: 0.8,
+    borderRadius: radius.sm,
   },
   progressMore: {
     justifyContent: 'center',
