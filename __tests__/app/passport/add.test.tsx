@@ -42,7 +42,6 @@ describe('Add Passport treatment form', () => {
 
     await fireEvent.changeText(screen.getByPlaceholderText('e.g. Botox'), 'Botox');
     await fireEvent.changeText(screen.getByPlaceholderText('e.g. Ivory & Ash Studio'), 'Ivory & Ash Studio');
-    await fireEvent.changeText(screen.getByPlaceholderText('0'), '450');
 
     await fireEvent.press(screen.getByRole('button', { name: 'Save to My Passport' }));
 
