@@ -43,7 +43,7 @@ function DiscoverModules() {
         subtitle="Create polished social images."
         layout="image-left"
         imageVariant="social"
-        badge="COMING SOON"
+        imageUri={require('../../assets/brand/glow/glow-natural-me.jpg')}
         onPress={() => router.push({ pathname: '/preview', params: { mode: 'glow' } })}
       />
       <EditorialModule
