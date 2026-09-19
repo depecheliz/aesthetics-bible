@@ -9,17 +9,17 @@ const stages = [
   {
     label: 'BEFORE',
     timing: 'Before treatment',
-    image: require('../../assets/brand/campaign/preview-demo-before.png'),
+    image: require('../../assets/brand/passport/passport-demo-before.jpg'),
   },
   {
     label: 'FOLLOW-UP',
     timing: 'Early results',
-    image: require('../../assets/brand/campaign/preview-demo-after.png'),
+    image: require('../../assets/brand/passport/passport-demo-follow-up.jpg'),
   },
   {
     label: 'LATEST',
     timing: 'Latest results',
-    image: require('../../assets/brand/campaign/preview-demo-after.png'),
+    image: require('../../assets/brand/passport/passport-demo-latest.jpg'),
   },
 ] as const;
 
