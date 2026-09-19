@@ -337,6 +337,24 @@ function buildExplanation(answers: QuizAnswers, category: TreatmentCategory): st
   return `You told us you're focused on ${concerns}, especially around ${areas}. With a ${intensity} result in mind and your preference for ${comfort}, ${category.name} rises to the top of your Aestella profile.`;
 }
 
+export type RecommendationMatch = {
+  category: TreatmentCategory;
+  explanation: string;
+};
+
+export type RecommendationResult = {
+  rulesVersion: string;
+  concern: ConcernId;
+  area: AreaId;
+  concerns: ConcernId[];
+  areas: AreaId[];
+  intensity: IntensityId;
+  topMatch: RecommendationMatch;
+  alternates: TreatmentCategory[];
+  budgetNote: string;
+  consideration: string | null;
+};
+
 function buildBudgetNote(category: TreatmentCategory, budget: QuizAnswers['budget']): string {
   const budgetTier = budgetTierByAnswer[budget];
   if (category.costTier > budgetTier) {
