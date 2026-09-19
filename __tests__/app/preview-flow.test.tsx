@@ -7,17 +7,21 @@ import {
   getPreviewImageUrls,
 } from '../../lib/services/previewGeneration';
 
+const mockPush = jest.fn();
+let mockUserId: string | null = 'owner';
+let mockIsPremium = true;
+
 jest.mock('expo-router', () => ({
-  router: { push: jest.fn() },
+  router: { push: mockPush },
   useLocalSearchParams: () => ({}),
   useFocusEffect: (callback: () => void) =>
     jest.requireActual('react').useEffect(callback, [callback]),
 }));
 jest.mock('../../lib/state/AuthContext', () => ({
-  useOptionalAuth: () => ({ user: { id: 'owner' } }),
+  useOptionalAuth: () => ({ user: mockUserId ? { id: mockUserId } : null }),
 }));
 jest.mock('../../lib/state/EntitlementContext', () => ({
-  useEntitlement: () => ({ isPremium: true }),
+  useEntitlement: () => ({ isPremium: mockIsPremium }),
 }));
 jest.mock('../../lib/services/previewProviderStatus', () => ({ isPreviewGenerationLive: true }));
 jest.mock('../../lib/services/imagePicker', () => ({ pickAndCompressPhoto: jest.fn() }));
@@ -33,6 +37,8 @@ jest.mock('../../lib/services/analyticsClient', () => ({ analytics: { track: jes
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockUserId = 'owner';
+  mockIsPremium = true;
   jest.mocked(pickAndCompressPhoto).mockResolvedValue({
     status: 'picked',
     photo: { uri: 'file:original.jpg', width: 300, height: 400 },
@@ -125,4 +131,59 @@ it('stopping the wait ignores a late result without pretending the server was ca
   );
   expect(screen.queryByTestId('before-after-slider')).toBeNull();
   expect(screen.getByText(/A request already received by the server may finish/)).toBeTruthy();
+});
+
+it('renders all eight Glow presets with a clear selected state and no Coming Soon UI', async () => {
+  await render(<PreviewScreen />);
+  await fireEvent.press(screen.getByLabelText('Glow'));
+
+  const presetNames = [
+    'Natural Me',
+    'Polished',
+    'Soft Glam',
+    'Golden Hour',
+    'Studio',
+    'Fresh Face',
+    'Date Night',
+    'Vacation Glow',
+  ];
+
+  for (const name of presetNames) {
+    expect(screen.getByLabelText(name)).toBeTruthy();
+  }
+  expect(screen.queryByText('COMING SOON')).toBeNull();
+  expect(screen.queryByLabelText('Coming Soon')).toBeNull();
+
+  await fireEvent.press(screen.getByLabelText('Polished'));
+  expect(screen.getByText('Selected: Polished')).toBeTruthy();
+  expect(screen.getByLabelText('Polished').props.accessibilityState.selected).toBe(true);
+});
+
+it('routes signed-out Glow apply intent to sign-in', async () => {
+  mockUserId = null;
+  await render(<PreviewScreen />);
+  await fireEvent.press(screen.getByLabelText('Glow'));
+  await fireEvent.press(screen.getByLabelText('Try Glow on My Photo'));
+  expect(mockPush).toHaveBeenCalledWith('/auth/sign-in');
+  expect(requestPreviewGeneration).not.toHaveBeenCalled();
+});
+
+it('routes signed-in free Glow apply intent to the Premium paywall', async () => {
+  mockIsPremium = false;
+  await render(<PreviewScreen />);
+  await fireEvent.press(screen.getByLabelText('Glow'));
+  await fireEvent.press(screen.getByLabelText('Unlock Glow'));
+  expect(mockPush).toHaveBeenCalledWith('/paywall');
+  expect(requestPreviewGeneration).not.toHaveBeenCalled();
+});
+
+it('keeps Premium Glow polished but does not invoke fake generation while processing is not live', async () => {
+  await render(<PreviewScreen />);
+  await fireEvent.press(screen.getByLabelText('Glow'));
+  await fireEvent.press(screen.getByLabelText('Golden Hour'));
+  await fireEvent.press(screen.getByLabelText('Apply Golden Hour'));
+
+  expect(screen.getByText('PREMIUM GLOW')).toBeTruthy();
+  expect(screen.getByText(/Glow photo application is in final testing/)).toBeTruthy();
+  expect(requestPreviewGeneration).not.toHaveBeenCalled();
 });
