@@ -49,7 +49,7 @@ describe('Screen smoke tests', () => {
       </EntitlementProvider>,
     );
 
-    expect(screen.getByText('YOUR AESTHETICS PROFILE')).toBeTruthy();
+    expect(screen.getByText('YOUR AESTELLA PROFILE')).toBeTruthy();
     jest.useRealTimers();
   });
 
