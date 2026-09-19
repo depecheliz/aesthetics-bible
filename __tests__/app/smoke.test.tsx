@@ -28,8 +28,8 @@ jest.mock('expo-router', () => ({
 // without a real browser/device available in this environment.
 
 const answers: QuizAnswers = {
-  concern: 'fine_lines',
-  area: 'forehead',
+  concern: ['fine_lines'],
+  area: ['forehead'],
   intensity: 'subtle',
   downtime: 'none',
   comfort: 'injectables',
