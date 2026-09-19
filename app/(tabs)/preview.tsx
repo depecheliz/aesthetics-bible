@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Screen } from '../../components/layout/Screen';
 import { ThemedText } from '../../components/typography/ThemedText';
@@ -60,6 +60,17 @@ const glowPresets = [
   'Vacation Glow',
 ];
 
+const glowPresetImages: Record<string, number> = {
+  'Natural Me': require('../../assets/brand/glow/glow-natural-me.jpg'),
+  Polished: require('../../assets/brand/glow/glow-polished.jpg'),
+  'Soft Glam': require('../../assets/brand/glow/glow-soft-glam.jpg'),
+  'Golden Hour': require('../../assets/brand/glow/glow-golden-hour.jpg'),
+  Studio: require('../../assets/brand/glow/glow-studio.jpg'),
+  'Fresh Face': require('../../assets/brand/glow/glow-fresh-face.jpg'),
+  'Date Night': require('../../assets/brand/glow/glow-date-night.jpg'),
+  'Vacation Glow': require('../../assets/brand/glow/glow-vacation-glow.jpg'),
+};
+
 const myNaturalLookPrefs = [
   'Gentle skin polish',
   'Slight eye brightening',
@@ -116,6 +127,7 @@ export default function PreviewScreen() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [history, setHistory] = useState<SavedPreview[]>([]);
   const [notice, setNotice] = useState('');
+  const [glowNotice, setGlowNotice] = useState('');
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
   const pending = useRef<PreviewGenerationRequest | null>(null);
   const active = useRef(false);
@@ -155,6 +167,7 @@ export default function PreviewScreen() {
       setHistory([]);
       setUsedThisMonth(0);
       setNotice('');
+      setGlowNotice('');
       pending.current = null;
       if (isPreviewGenerationLive) void refreshHistory();
       return () => {
@@ -252,6 +265,20 @@ export default function PreviewScreen() {
     pending.current = null;
     await refreshHistory();
   }, [isPremium, eligibility, userId, selectedGoal, intensity, photo, refreshHistory]);
+
+  const handleTryGlow = useCallback(() => {
+    if (!userId) {
+      router.push('/auth/sign-in');
+      return;
+    }
+    if (!isPremium) {
+      router.push('/paywall');
+      return;
+    }
+    setGlowNotice(
+      `${selectedPreset} is selected. Glow photo application is in final testing. Your Premium access is ready, and no photo will be sent anywhere until processing is live.`,
+    );
+  }, [isPremium, selectedPreset, userId]);
 
   const handleReport = useCallback(async () => {
     if (generation.phase !== 'result') return;
@@ -510,25 +537,13 @@ export default function PreviewScreen() {
             <ThemedText variant="displayMedium" style={styles.headline}>
               Your photo. Elevated.
             </ThemedText>
-            <View style={styles.comingSoonBanner}>
-              <ThemedText variant="eyebrow" color={colors.textMuted}>
-                COMING SOON
-              </ThemedText>
-              <ThemedText
-                variant="caption"
-                color={colors.textSecondary}
-                style={styles.comingSoonBody}
-              >
-                Glow isn&rsquo;t built yet and isn&rsquo;t included with your Aesthetics Bible
-                Premium subscription today.
-              </ThemedText>
-            </View>
             <ThemedText variant="body" color={colors.textSecondary} style={styles.glowIntro}>
-              Create a polished version of yourself for the photos you actually share.
+              Explore eight polished photo styles for social sharing. Presets are free to browse;
+              applying Glow to your own photo is a Premium feature.
             </ThemedText>
 
             <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
-              PRESETS
+              CHOOSE YOUR GLOW
             </ThemedText>
             <View style={styles.presetGrid}>
               {glowPresets.map((preset) => {
@@ -536,29 +551,56 @@ export default function PreviewScreen() {
                 return (
                   <Pressable
                     key={preset}
-                    onPress={() => setSelectedPreset(preset)}
+                    onPress={() => {
+                      setSelectedPreset(preset);
+                      setGlowNotice('');
+                    }}
                     accessibilityRole="button"
                     accessibilityState={{ selected }}
                     accessibilityLabel={preset}
                     style={styles.presetTile}
                   >
-                    <EditorialImage
-                      variant="social"
-                      tone={selected ? 'ivory' : 'dark'}
-                      label={preset}
-                    />
+                    <View style={[styles.presetImageFrame, selected && styles.presetImageFrameSelected]}>
+                      <Image
+                        source={glowPresetImages[preset]}
+                        style={styles.presetImage}
+                        resizeMode="cover"
+                      />
+                    </View>
+                    <ThemedText
+                      variant="caption"
+                      color={selected ? colors.accent : colors.textPrimary}
+                      style={styles.presetLabel}
+                    >
+                      {preset}
+                    </ThemedText>
                   </Pressable>
                 );
               })}
             </View>
 
+            <ThemedText variant="caption" color={colors.textSecondary} style={styles.selectedGlow}>
+              Selected: {selectedPreset}
+            </ThemedText>
+
             <Button
-              label="Coming Soon"
+              label={userId ? (isPremium ? `Apply ${selectedPreset}` : 'Unlock Glow') : 'Try Glow on My Photo'}
               icon="sun"
               variant="secondary"
-              disabled
+              onPress={handleTryGlow}
               style={styles.tryButton}
             />
+
+            {!!glowNotice && (
+              <Card style={styles.glowStatusCard}>
+                <ThemedText variant="eyebrow" color={colors.accent}>
+                  PREMIUM GLOW
+                </ThemedText>
+                <ThemedText variant="body" color={colors.textPrimary} style={styles.glowStatusText}>
+                  {glowNotice}
+                </ThemedText>
+              </Card>
+            )}
 
             <Rule style={styles.rule} />
 
@@ -583,11 +625,16 @@ export default function PreviewScreen() {
                   · {pref}
                 </ThemedText>
               ))}
-              <Button label="Coming Soon" variant="secondary" disabled style={styles.applyButton} />
+              <Button
+                label={userId ? (isPremium ? 'Apply My Natural Look' : 'Unlock My Natural Look') : 'Try My Natural Look'}
+                variant="secondary"
+                onPress={handleTryGlow}
+                style={styles.applyButton}
+              />
             </Card>
 
             <ThemedText variant="eyebrow" color={colors.textSecondary} style={styles.sectionLabel}>
-              EXPORT TO
+              DESIGNED FOR
             </ThemedText>
             <View style={styles.exportRow}>
               {exportDestinations.map((destination) => (
@@ -600,8 +647,8 @@ export default function PreviewScreen() {
             </View>
 
             <ThemedText variant="caption" color={colors.textMuted} style={styles.disclaimer}>
-              Glow enhances a photo for social sharing — it is separate from Preview and is not a
-              treatment visualization.
+              Glow enhances a photo for social presentation. It does not simulate a treatment,
+              predict a result, reshape your face, or provide medical guidance.
             </ThemedText>
           </>
         )}
@@ -714,17 +761,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     marginBottom: spacing.sm,
   },
-  comingSoonBanner: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  comingSoonBody: {
-    marginTop: spacing.xxs,
-  },
   glowIntro: {
     marginBottom: spacing.lg,
   },
@@ -737,6 +773,36 @@ const styles = StyleSheet.create({
   presetTile: {
     width: '30%',
     flexGrow: 1,
+  },
+  presetImageFrame: {
+    width: '100%',
+    aspectRatio: 0.8,
+    borderRadius: radius.sm,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  presetImageFrameSelected: {
+    borderWidth: 2,
+    borderColor: colors.accent,
+  },
+  presetImage: {
+    width: '100%',
+    height: '100%',
+  },
+  presetLabel: {
+    marginTop: spacing.xs,
+    textAlign: 'center',
+  },
+  selectedGlow: {
+    marginBottom: spacing.md,
+  },
+  glowStatusCard: {
+    marginTop: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  glowStatusText: {
+    marginTop: spacing.xs,
   },
   lookCard: {
     marginBottom: spacing.lg,
