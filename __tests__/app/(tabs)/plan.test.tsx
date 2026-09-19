@@ -9,8 +9,8 @@ jest.mock('expo-router', () => ({
 }));
 
 const answers: QuizAnswers = {
-  concern: 'volume_loss',
-  area: 'cheeks',
+  concern: ['volume_loss'],
+  area: ['cheeks'],
   intensity: 'natural',
   downtime: 'not_concern',
   comfort: 'injectables',
