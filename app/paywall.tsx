@@ -14,13 +14,10 @@ import { analytics } from '../lib/services/analyticsClient';
 import { isRevenueCatConfigured } from '../lib/services/revenueCatBilling';
 import { colors, radius, spacing } from '../constants/theme';
 
-// GLOW is intentionally not part of this list for V1 — it isn't built, and
-// listing it here would be the same silent-fake-inside-a-paid-feature
-// problem as the old mocked Preview button. It stays visible elsewhere in
-// the app, clearly labeled "Coming Soon."
 const premiumModules: { name: string; description: string }[] = [
   { name: 'PLAN', description: 'Your complete personalized roadmap.' },
   { name: 'PREVIEW', description: 'See aesthetic possibilities — 10 AI visualizations a month.' },
+  { name: 'GLOW', description: 'Premium social-photo enhancement with eight signature looks. Presets are available to explore now; photo application is in final testing.' },
   { name: 'PASSPORT', description: 'Track every treatment and result.' },
   { name: 'THE BIBLE', description: 'Understand your options.' },
   { name: 'BOTOX BESTIE', description: 'Ask the questions you actually want answered.' },
