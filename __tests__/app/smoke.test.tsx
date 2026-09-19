@@ -147,7 +147,7 @@ describe('Screen smoke tests', () => {
         <PassportScreen />
       </AppStateProvider>,
     );
-    expect(screen.getByText('YOUR YEAR IN AESTHETICS')).toBeTruthy();
+    expect(screen.getByText('YOUR AESTELLA PASSPORT')).toBeTruthy();
   });
 
   it('renders the Passport tab empty state', async () => {
@@ -161,7 +161,7 @@ describe('Screen smoke tests', () => {
 
   it('renders the Progress Photos screen', async () => {
     await render(<ProgressPhotosScreen />);
-    expect(screen.getByText('Create Progress Story')).toBeTruthy();
+    expect(screen.getByText('SAMPLE PROGRESS JOURNEY')).toBeTruthy();
   });
 
   it('renders a Passport entry detail page', async () => {
